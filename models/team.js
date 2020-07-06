@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         db.Team.hasMany(db.User);
         db.Team.hasMany(db.Match);
         db.Team.hasOne(db.User,{foreignKey:'leader'});
-        db.Team.belongsToMany(db.Post, { through: 'Like', as: 'Liked' });
+        // db.Team.belongsToMany(db.Post, { through: 'Like', as: 'Liked' });
     };
 
     return Team;
