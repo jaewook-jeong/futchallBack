@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         }, {
         charset: 'utf8',
-        collate: 'utf8_general_ci', // 한글이 저장돼요
+        collate: 'utf8_general_ci',
     });
 
     User.associate = (db) => {
@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         db.User.belongsTo(db.Team); // 리더
         db.User.belongsToMany(db.Team, { through: 'Member', as: 'Liked' });
         db.User.hasMany(db.Comment);
-        db.User.belongsToMany(db.Post, { through: 'Like', as: 'Liked' });
+        db.User.hasMany(db.Post);
     };
 
     return User;
