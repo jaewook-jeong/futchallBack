@@ -3,34 +3,21 @@ const db = require('../models');
 const local = require('./local');
 
 module.exports = () => {
-    passport.serializeUser((user, done) => { // 서버쪽에 [{ id: 3, cookie: 'asdfgh' }]
-        return done(null, user.id);
-    });
+  passport.serializeUser((user, done) => { // 서버쪽에 [{ id: 3, cookie: 'asdfgh' }]
+    return done(null, user.id); //user정보중 쿠키와 묶을 ID값 저장
+  });
 
-    passport.deserializeUser(async (id, done) => {
-        try {
-            const user = await db.User.findOne({
-                where: { id },
-                include: [{
-                model: db.Post,
-                as: 'Posts',
-                attributes: ['id'],
-                }, {
-                model: db.User,
-                as: 'Followings',
-                attributes: ['id'],
-                }, {
-                model: db.User,
-                as: 'Followers',
-                attributes: ['id'],
-                }],
-            });
-            return done(null, user); // req.user
-        } catch (e) {
-            console.error(e);
-            return done(e);
-        }
-    });
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await db.User.findOne({
+        where: { id }
+      });
+      return done(null, user); // req.user에 넣어준다
+    } catch (e) {
+      console.error(e);
+      return done(e);
+    }
+  });
 
     local();
 };
