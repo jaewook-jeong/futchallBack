@@ -1,11 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
     const Team = sequelize.define('Team', { // 테이블명은 teams
-        req: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         title: {
             type: DataTypes.STRING(30), 
             allowNull: false, // 필수
@@ -33,9 +27,12 @@ module.exports = (sequelize, DataTypes) => {
 
     Team.associate = (db) => {
         db.Team.hasMany(db.User);
-        db.Team.hasMany(db.Match);
-        db.Team.hasOne(db.User,{foreignKey:'leader'});
-        // db.Team.belongsToMany(db.Post, { through: 'Like', as: 'Liked' });
+        db.Team.hasMany(db.Stadium);
+        db.Team.hasMany(db.Post);
+        db.Team.hasMany(db.Image);
+        db.Team.hasOne(db.Match, { as: 'Home' });
+        db.Team.hasOne(db.Match, { as: 'Away' });
+        db.Team.hasOne(db.User, { as: 'Leader' });
     };
 
     return Team;

@@ -11,7 +11,10 @@ module.exports = (sequelize, DataTypes) => {
 
   Post.associate = (db) => {
     db.Post.belongsTo(db.User);
+    db.Post.belongsTo(db.Stadium);
+    db.Post.belongsTo(db.Team);
     db.Post.hasMany(db.Comment);
+    db.Post.hasMany(db.Image);
   };
 
   return Post;

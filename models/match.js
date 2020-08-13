@@ -1,32 +1,23 @@
 module.exports = (sequelize, DataTypes) => {
-    const Match = sequelize.define('Match', { // 테이블명은 matches
-        req: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        date: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        homeTeam: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-        },
-        awayTeam: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-        }
-        }, {
-        charset: 'utf8',
-        collate: 'utf8_general_ci', 
-    });
+  const Match = sequelize.define('Match', { // 테이블명은 matches
+      date: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      scores: {
+        type: DataTypes.STRING(5),
+        allowNull: false,
+      },
+    }, {
+      charset: 'utf8',
+      collate: 'utf8_general_ci', 
+  });
 
-    Match.associate = (db) => {
-        db.Match.hasOne(db.Stadium,{foreignKey:'stadium'});
-        db.Match.belongsToMany(db.Team, {/* through: 'Like', as: 'Liked' */});
-    };
+  Match.associate = (db) => {
+    db.Match.belongsTo(db.Stadium);
+    db.Match.belongsTo(db.Team, { as: 'Home' });
+    db.Match.belongsTo(db.Team, { as: 'Away' });
+  };
 
-    return Match;
+  return Match;
 };

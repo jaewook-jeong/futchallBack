@@ -4,10 +4,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(20), // 20글자 이하
             allowNull: false, // 필수
         },
-        userId: {
+        originalId: {
             type: DataTypes.STRING(20),
             allowNull: false,
-            primaryKey: true,
+            // primaryKey: true,
         },
         password: {
             type: DataTypes.STRING(100), // 100글자 이하
@@ -31,10 +31,11 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     User.associate = (db) => {
-        // db.User.hasMany(db.Post, { as: 'Posts' });
-        db.User.belongsTo(db.Team); // 리더
+        db.User.belongsTo(db.Team);
+        db.User.belongsTo(db.Team, { as: 'Leader' });
         db.User.hasMany(db.Comment);
         db.User.hasMany(db.Post);
+        db.User.hasMany(db.Image);
     };
 
     return User;

@@ -1,11 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const Stadium = sequelize.define('Stadium', { // 테이블명은 stadiums
-        req: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true,
-        },
+    const Stadium = sequelize.define('Stadium', { // 테이블명은 stadia
         title: {
             type: DataTypes.STRING(30), 
             allowNull: false, // 필수
@@ -44,7 +38,10 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Stadium.associate = (db) => {
-        db.Stadium.hasOne(db.Team,{foreignKey:'occupation'});
+        db.Stadium.belongsTo(db.Team);
+        db.Stadium.hasMany(db.Match);
+        db.Stadium.hasMany(db.Image);
+        db.Stadium.hasMany(db.Post);
     };
 
     return Stadium;
