@@ -9,6 +9,7 @@ module.exports = () => {
 
   passport.deserializeUser(async (id, done) => {
     try {
+      console.log(id);
       const user = await db.User.findOne({
         where: { id }
       });
