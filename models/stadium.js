@@ -5,11 +5,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false, // 필수
         },
         lat: {
-            type: DataTypes.STRING(10),
+            type: DataTypes.STRING(20),
             allowNull: false,
         },
         lng: {
-            type: DataTypes.STRING(10),
+            type: DataTypes.STRING(20),
             allowNull: false,
         },
         address: {
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         time: {
-            type: DataTypes.STRING(10), 
+            type: DataTypes.STRING(15), 
             allowNull: false,
         },
         light: {
@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        valid: {
+          type: DataTypes.STRING(30),
+          allowNull: true,
+        }
         }, {
         charset: 'utf8mb4',
         collate: 'utf8mb4_general_ci', 
@@ -39,9 +43,9 @@ module.exports = (sequelize, DataTypes) => {
 
     Stadium.associate = (db) => {
         db.Stadium.belongsTo(db.Team);
-        db.Stadium.hasMany(db.Match);
-        db.Stadium.hasMany(db.Image);
-        db.Stadium.hasMany(db.Post);
+        db.Stadium.hasMany(db.Match, { onDelete: 'cascade' });
+        db.Stadium.hasMany(db.Image, { onDelete: 'cascade' });
+        db.Stadium.hasMany(db.Post, { onDelete: 'cascade' });
     };
 
     return Stadium;
