@@ -9,7 +9,10 @@ const passport = require('passport');
 const passportConfig = require('./passport');
 const db = require('./models');
 const userAPIRouter = require('./routes/user');
-const postApiRouter = require('./routes/post');
+const postAPIRouter = require('./routes/post');
+const postsAPIRouter = require('./routes/posts');
+const teamAPIRouter = require('./routes/team');
+const stadiumAPIRouter = require('./routes/stadium');
 
 dotenv.config();
 const app = express();
@@ -20,7 +23,7 @@ db.sequelize.sync()
   .catch(console.error);
 
 passportConfig();
-
+app.use(morgan('dev'));
 app.use(cors({
     origin: true,
     credentials: true,
@@ -37,7 +40,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/user', userAPIRouter);
-app.use('/post', postApiRouter);
+app.use('/post', postAPIRouter);
+app.use('/posts', postsAPIRouter);
+app.use('/team', teamAPIRouter);
+app.use('/stadium', stadiumAPIRouter);
+
 
 // app.use((err, req, res, next) => {
 // // 에러처리 미들웨어 custom 가능, 여기부분에서!
