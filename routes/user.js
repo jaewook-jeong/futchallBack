@@ -3,10 +3,36 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 
 const db = require('../models');
-
+const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const router = express.Router();
 
-router.post('/login', (req, res, next) => {
+router.get('/', async (req, res, next) => {
+  try {
+    if (req.user){
+      const fullUserWithoutPwd = await db.User.findOne({
+        where: { id : req.user.id },
+        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
+        include: [{
+          model: db.Team,
+          attributes: ['id', 'title'],
+        }, {
+          model: db.Post,
+          attributes: ['id'],
+        }, {
+          model: db.Image,
+        }]
+      })
+      res.status(200).json(fullUserWithoutPwd);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+})
+
+router.post('/login', isNotLoggedIn, (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
       console.error(err);
@@ -21,18 +47,24 @@ router.post('/login', (req, res, next) => {
         return next(loginErr);
       }
       const fullUserWithoutPwd = await db.User.findOne({
-        where: {originalId : user.originalId},
-        attributes: ['id', 'originalId', 'positions', 'age', 'locations'],
+        where: { originalId : user.originalId },
+        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
         include: [{
-          model: db.Team
+          model: db.Team,
+          attributes: ['id', 'title'],
+        }, {
+          model: db.Post,
+          attributes: ['id'],
+        }, {
+          model: db.Image,
         }]
       })
-      return res.status(200).json(user);
+      return res.status(200).json(fullUserWithoutPwd);
     });
   })(req, res, next);
 });
 
-router.post('/signup', async (req, res, next) => {
+router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   try {
     const taken = await db.User.findOne({
       where: {
@@ -51,7 +83,35 @@ router.post('/signup', async (req, res, next) => {
       age: req.body.age,
       locations: req.body.selectedLocations ? req.body.selectedLocations.join() : null,
     });
-    res.status(201).send('ok');
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        console.error(err);
+        return next(err);
+      }
+      if (info) {
+        return res.status(401).send(info.reason);
+      }
+      return req.login(user, async (loginErr) => {
+        if (loginErr) {
+          console.error(loginErr);
+          return next(loginErr);
+        }
+        const fullUserWithoutPwd = await db.User.findOne({
+          where: { originalId : user.originalId },
+          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
+          include: [{
+            model: db.Team,
+            attributes: ['id', 'title'],
+          }, {
+            model: db.Post,
+            attributes: ['id'],
+          }, {
+            model: db.Image,
+          }]
+        })
+        return res.status(200).json(fullUserWithoutPwd);
+      });
+    })(req, res, next);
   } catch (error) {
     console.error(error);
     next(error); //status 500 server error
@@ -74,7 +134,7 @@ router.post('/isTaken', async (req, res, next) => {
   }
 });
 
-router.post('/logout', async (req, res) => {
+router.post('/logout', isLoggedIn, async (req, res) => {
   req.logOut();
   req.session.destroy();
   res.send('ok');
