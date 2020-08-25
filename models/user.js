@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     User.associate = (db) => {
         db.User.belongsTo(db.Team);
         db.User.belongsTo(db.Team, { as: 'Leader' });
+        db.User.belongsTo(db.Team, { as: 'JoinIn' });
         db.User.hasMany(db.Comment, { onDelete: 'cascade' });
         db.User.hasMany(db.Post, { onDelete: 'cascade' });
         db.User.hasMany(db.Image, { onDelete: 'cascade' });

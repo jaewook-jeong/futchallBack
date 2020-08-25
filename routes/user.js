@@ -11,7 +11,7 @@ router.get('/', async (req, res, next) => {
     if (req.user){
       const fullUserWithoutPwd = await db.User.findOne({
         where: { id : req.user.id },
-        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
+        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
         include: [{
           model: db.Team,
           attributes: ['id', 'title'],
@@ -48,7 +48,7 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
       }
       const fullUserWithoutPwd = await db.User.findOne({
         where: { originalId : user.originalId },
-        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
+        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
         include: [{
           model: db.Team,
           attributes: ['id', 'title'],
@@ -62,6 +62,30 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
       return res.status(200).json(fullUserWithoutPwd);
     });
   })(req, res, next);
+});
+
+router.post('/join', isLoggedIn, async (req, res, next) => {
+    try {
+      const team = await db.Team.findOne({
+        where: {
+          id: req.body.id,
+        }
+      });
+      if (!team) {
+        return res.status(400).send('존재하지 않는 팀입니다.');
+      }
+      const user = await db.User.findOne({
+        where: {
+          id: req.user.id
+        }
+      });
+      user.JoinInId = team.id;
+      await user.save();
+      res.status(200).json(team.id);
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
 });
 
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
@@ -98,7 +122,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
         }
         const fullUserWithoutPwd = await db.User.findOne({
           where: { originalId : user.originalId },
-          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId'],
+          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
           include: [{
             model: db.Team,
             attributes: ['id', 'title'],

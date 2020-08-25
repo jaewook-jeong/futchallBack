@@ -6,6 +6,7 @@ const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
 router.post('/', isLoggedIn, async (req, res, next) => {
+  // 경기정보도 들어있는 게시글
   try {
     const post = await Post.create({
       content: req.body.content,
