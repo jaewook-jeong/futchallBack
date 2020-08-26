@@ -26,13 +26,14 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Team.associate = (db) => {
-        db.Team.hasMany(db.User);
-        db.Team.hasMany(db.Stadium);
-        db.Team.hasMany(db.Post, { onDelete: 'cascade' });
-        db.Team.hasMany(db.Image, { onDelete: 'cascade' });
-        db.Team.hasOne(db.Match, { as: 'Home' });
-        db.Team.hasOne(db.Match, { as: 'Away' });
-        db.Team.hasOne(db.User, { as: 'Leader' });
+      db.Team.hasMany(db.User);
+      db.Team.hasMany(db.Stadium);
+      db.Team.hasMany(db.Post, { onDelete: 'cascade' });
+      db.Team.hasMany(db.Image, { onDelete: 'cascade' });
+      db.Team.hasOne(db.Match, { as: 'Home' });
+      db.Team.hasOne(db.Match, { as: 'Away' });
+      db.Team.hasOne(db.User, { as: 'Leader' });
+      db.Team.hasMany(db.User, { as: 'JoinIn' });
     };
 
     return Team;
