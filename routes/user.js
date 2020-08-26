@@ -79,6 +79,7 @@ router.post('/join', isLoggedIn, async (req, res, next) => {
           id: req.user.id
         }
       });
+      // team.addJoinIns(team.id); 
       user.JoinInId = team.id;
       await user.save();
       res.status(200).json(team.id);

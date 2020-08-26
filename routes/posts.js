@@ -7,10 +7,10 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     const where = {};
-    if (req.body.where === 'team') {
-      where.TeamId = req.body.id;
-    } else if (req.body.where === 'stadium') {
-      where.StadiumId = req.body.id;
+    if (req.query.where === 'team') {
+      where.TeamId = req.query.id;
+    } else if (req.query.where === 'stadium') {
+      where.StadiumId = req.query.id;
     } else {
       return res.status(400).send('잘못된 접근입니다!');
     }

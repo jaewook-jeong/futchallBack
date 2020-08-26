@@ -6,7 +6,7 @@ const stadium = require('../models/stadium');
 
 const router = express.Router();
 
-router.post('/register', async (req, res, next) => {
+router.post('/register', isLoggedIn, async (req, res, next) => {
   try {
     const team = await Team.create({
       title: req.body.title,
@@ -15,15 +15,9 @@ router.post('/register', async (req, res, next) => {
       recruit: req.body.recruit,
       description: req.body.description,
     });
-    const user = await User.findOne({
-      where: {
-        id: req.user.id
-      }
-    });
-    if (!user) return res.status(401).send('유저정보가 없습니다.');
-    user.TeamId = team.id;
-    user.LeaderId = team.id;
-    await user.save();
+    await team.addUsers(req.user.id);
+    await team.setLeader(req.user.id);
+    
     res.status(201).json(team);
   } catch (error) {
     console.error(error);

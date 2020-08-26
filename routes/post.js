@@ -25,7 +25,63 @@ router.post('/', isLoggedIn, async (req, res, next) => {
       },{
         model: Team,
       }]
-    })
+    });
+    res.status(201).json(fullPost);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/team', isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.create({
+      content: req.body.content,
+      UserId: req.user.id,
+      TeamId: req.body.req,
+    });
+    const fullPost = await Post.findOne({
+      where: { id: post.id },
+      include: [{
+        model: Image,
+      },{
+        model: Comment,
+      },{
+        model: User,
+      },{
+        model: Stadium,
+      },{
+        model: Team,
+      }]
+    });
+    res.status(201).json(fullPost);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/stadium', isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.create({
+      content: req.body.content,
+      UserId: req.user.id,
+      StadiumId: req.body.req,
+    });
+    const fullPost = await Post.findOne({
+      where: { id: post.id },
+      include: [{
+        model: Image,
+      },{
+        model: Comment,
+      },{
+        model: User,
+      },{
+        model: Stadium,
+      },{
+        model: Team,
+      }]
+    });
     res.status(201).json(fullPost);
   } catch (error) {
     console.error(error);
