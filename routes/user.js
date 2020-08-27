@@ -64,7 +64,7 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
   })(req, res, next);
 });
 
-router.post('/join', isLoggedIn, async (req, res, next) => {
+router.patch('/join', isLoggedIn, async (req, res, next) => {
     try {
       const team = await db.Team.findOne({
         where: {
@@ -133,7 +133,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
           }, {
             model: db.Image,
           }]
-        })
+        });
         return res.status(200).json(fullUserWithoutPwd);
       });
     })(req, res, next);
@@ -164,5 +164,72 @@ router.post('/logout', isLoggedIn, async (req, res) => {
   req.session.destroy();
   res.send('ok');
 })
+
+router.patch('/pwd', isLoggedIn, async (req, res, next) => {
+  try {
+    const findUser = await db.User.findOne({
+      where: req.user.id,
+    });
+    const result = await bcrypt.compare(req.body.prevpwd, findUser.password);
+    if (result) {
+      const hashedPwd = await bcrypt.hash(req.body.password, 11);
+      await db.User.update({
+        password: hashedPwd,
+      },{
+        where: {
+          id: req.user.id,
+        }
+      });
+      res.send('ok');
+    } else {
+
+    }
+    
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.patch('/modify', isLoggedIn, async (req, res, next) => {
+  try {
+    const findUser = await db.User.findOne({ 
+      where: req.user.id,
+    });
+    const result = await bcrypt.compare(req.body.password, findUser.password);
+    if (result) {
+      await db.User.update({
+        nickname: req.body.nickname,
+        positions: req.body.positions ? req.body.positions.join() : null,
+        age: req.body.age,
+        locations: req.body.locations ? req.body.locations.join() : null,
+      },{
+        where: {
+          id: req.user.id,
+        },
+        plain: true,
+      });
+      const fullUserWithoutPwd = await db.User.findOne({
+        where: { id: req.user.id },
+        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
+        include: [{
+          model: db.Team,
+          attributes: ['id', 'title'],
+        }, {
+          model: db.Post,
+          attributes: ['id'],
+        }, {
+          model: db.Image,
+        }]
+      });
+      res.status(200).json(fullUserWithoutPwd);
+    } else {
+      return res.status(401).send('입력하신 정보가 올바르지 않습니다!');
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 module.exports = router;
