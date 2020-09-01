@@ -5,11 +5,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false, // 필수
         },
         lat: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.DECIMAL(17,15),
             allowNull: false,
         },
         lng: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.DECIMAL(17,14),
             allowNull: false,
         },
         address: {

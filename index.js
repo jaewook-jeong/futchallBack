@@ -5,6 +5,7 @@ const cors = require('cors');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+const path = require('path');
 
 const passportConfig = require('./passport');
 const db = require('./models');
@@ -13,6 +14,7 @@ const postAPIRouter = require('./routes/post');
 const postsAPIRouter = require('./routes/posts');
 const teamAPIRouter = require('./routes/team');
 const stadiumAPIRouter = require('./routes/stadium');
+const stadiaAPIRouter = require('./routes/stadia');
 
 dotenv.config();
 const app = express();
@@ -28,6 +30,7 @@ app.use(cors({
     origin: true,
     credentials: true,
 })); 
+app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
 app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -44,7 +47,7 @@ app.use('/post', postAPIRouter);
 app.use('/posts', postsAPIRouter);
 app.use('/team', teamAPIRouter);
 app.use('/stadium', stadiumAPIRouter);
-
+app.use('/stadia', stadiaAPIRouter);
 
 // app.use((err, req, res, next) => {
 // // 에러처리 미들웨어 custom 가능, 여기부분에서!
