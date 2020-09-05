@@ -1,10 +1,14 @@
 const express = require('express');
 
 const { Team, User, Image, Stadium } = require('../models');
-const { isLoggedIn } = require('./middlewares');
-const stadium = require('../models/stadium');
+const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
+
+router.post('/image', isLoggedIn, upload.single('image'), async (req, res, next) => {
+  console.log(req.file);
+  res.json(req.file.filename);
+})
 
 router.post('/register', isLoggedIn, async (req, res, next) => {
   try {
@@ -17,7 +21,10 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
     });
     await team.addUsers(req.user.id);
     await team.setLeader(req.user.id);
-    
+    if (req.body.image) {
+      const image = await Image.create({ src: req.body.image });
+      await team.addImages(image);
+    }
     res.status(201).json(team);
   } catch (error) {
     console.error(error);

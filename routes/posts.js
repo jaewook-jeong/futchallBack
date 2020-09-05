@@ -19,26 +19,30 @@ router.get('/', async (req, res, next) => {
     }
     const posts = await Post.findAll({
       where,
-      limit: 10,
+      limit: 5,
       order: [
         ['createdAt', 'DESC'],
-        [Comment, 'createdAt', 'DESC']
+        [Comment, 'createdAt', 'ASC']
       ],
       include: [{
         model: User,
         attributes: ['id', 'nickname'],
         include: [{
           model: Image,
+          attributes: ['id', 'src'],
         }]
       },{
         model: Image,
+        attributes: ['id', 'src'],
       },{
         model: Comment,
+        attributes: ['id', 'content', 'createdAt', 'PostId', 'ParentId'],
         include: [{
           model: User,
           attributes: ['id', 'nickname'],
           include: [{
             model: Image,
+            attributes: ['id', 'src'],
           }]
         }]
       }]

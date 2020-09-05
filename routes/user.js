@@ -3,8 +3,13 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 
 const db = require('../models');
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn, upload } = require('./middlewares');
 const router = express.Router();
+
+router.post('/image', isNotLoggedIn, upload.single('image'), async (req, res, next) => {
+  console.log(req.file);
+  res.json(req.file.filename);
+})
 
 router.get('/', async (req, res, next) => {
   try {
@@ -100,7 +105,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       return res.status(403).send("이미 사용중인 아이디입니다.");
     }
     const hashedPwd = await bcrypt.hash(req.body.password, 11);
-    await db.User.create({
+    const user = await db.User.create({
       originalId: req.body.originalId,
       nickname: req.body.nickname,
       password: hashedPwd,
@@ -108,6 +113,10 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       age: req.body.age,
       locations: req.body.selectedLocations ? req.body.selectedLocations.join() : null,
     });
+    if (req.body.image) {
+      const image = await db.Image.create({ src: req.body.image });
+      await user.addImages(image);
+    }
     passport.authenticate('local', (err, user, info) => {
       if (err) {
         console.error(err);
@@ -132,6 +141,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
             attributes: ['id'],
           }, {
             model: db.Image,
+            attributes: ['id', 'src'],
           }]
         });
         return res.status(200).json(fullUserWithoutPwd);

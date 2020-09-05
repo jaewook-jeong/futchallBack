@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 const db = require('../models');
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
+router.patch('/', async (req, res, next) => {
   try {
     const stadiumList = await db.Stadium.findAll({
       where: {

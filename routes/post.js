@@ -1,17 +1,41 @@
 const express = require('express');
+const fs = require('fs');
 
 const { Post, Comment, Image, User, Stadium, Team } = require('../models');
-const { isLoggedIn } = require('./middlewares');
+const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
 
-router.post('/', isLoggedIn, async (req, res, next) => {
+try {
+  fs.accessSync('uploads');
+} catch (error) {
+  fs.mkdirSync('uploads');
+}
+
+
+router.post('/images', isLoggedIn,  upload.array('image'), async (req, res, next) => {
+  console.log(req.files);
+  res.json(req.files.map((v) => v.filename));
+});
+
+router.post('/', upload.none(),isLoggedIn, async (req, res, next) => {
   // 경기정보도 들어있는 게시글
   try {
     const post = await Post.create({
       content: req.body.content,
       UserId: req.user.id,
+      TeamId: req.body.team,
+      StadiumId: req.body.stadium,
     });
+    if (req.body.image) {
+      if (Array.isArray(req.body.image)) {
+        const images = await Promise.all(req.body.image.map((image) => Image.create({ src: image })));
+        await post.addImages(images);
+      } else {
+        const image = await Image.create({ src: req.body.image });
+        await post.addImages(image);
+      }
+    }
     const fullPost = await Post.findOne({
       where: { id: post.id },
       include: [{
@@ -33,25 +57,32 @@ router.post('/', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/team', isLoggedIn, async (req, res, next) => {
+router.post('/team', upload.none(), isLoggedIn, async (req, res, next) => {
   try {
     const post = await Post.create({
       content: req.body.content,
       UserId: req.user.id,
       TeamId: req.body.req,
     });
+    if (req.body.image) {
+      if (Array.isArray(req.body.image)) {
+        const images = await Promise.all(req.body.image.map((image) => Image.create({ src: image })));
+        await post.addImages(images);
+      } else {
+        const image = await Image.create({ src: req.body.image });
+        await post.addImages(image);
+      }
+    }
     const fullPost = await Post.findOne({
       where: { id: post.id },
       include: [{
         model: Image,
+        attributes: ['id', 'src']
       },{
         model: Comment,
       },{
         model: User,
-      },{
-        model: Stadium,
-      },{
-        model: Team,
+        attributes: ['id', 'nickname', 'LeaderId', 'TeamId'],
       }]
     });
     res.status(201).json(fullPost);
@@ -61,25 +92,32 @@ router.post('/team', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/stadium', isLoggedIn, async (req, res, next) => {
+router.post('/stadium', upload.none(), isLoggedIn, async (req, res, next) => {
   try {
     const post = await Post.create({
       content: req.body.content,
       UserId: req.user.id,
       StadiumId: req.body.req,
     });
+    if (req.body.image) {
+      if (Array.isArray(req.body.image)) {
+        const images = await Promise.all(req.body.image.map((image) => Image.create({ src: image })));
+        await post.addImages(images);
+      } else {
+        const image = await Image.create({ src: req.body.image });
+        await post.addImages(image);
+      }
+    }
     const fullPost = await Post.findOne({
       where: { id: post.id },
       include: [{
         model: Image,
+        attributes: ['id', 'src']
       },{
         model: Comment,
       },{
         model: User,
-      },{
-        model: Stadium,
-      },{
-        model: Team,
+        attributes: ['id', 'nickname', 'LeaderId', 'TeamId'],
       }]
     });
     res.status(201).json(fullPost);
@@ -99,12 +137,25 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
     if (!post) {
       return res.status(403).send('존재하지 않는 게시글입니다.')
     }
-    const comment = await Comment.create({
-      content: req.body,content,
+    await Comment.create({
+      content: req.body.content,
       PostId: req.params.postId,
-      UserId: req.user.id, // passport에서 deserialize 한 후 req.user에 넣어준다
+      UserId: req.user.id,
+      ParentId: req.body.ParentId,
     });
-    res.status(201).json(comment);
+    const fullComment = await Comment.findAll({
+      where: { PostId: req.params.postId },
+      attributes: ['id', 'content', 'createdAt', 'PostId', 'ParentId'],
+      include: [{
+        model: User,
+        attributes: ['id', 'nickname'],
+        include: [{
+          model: Image,
+          attributes: ['id', 'src'],
+        }]
+      }],
+    })
+    res.status(201).json(fullComment);
   } catch (error) {
     console.error(error);
     next(error);
