@@ -1,5 +1,5 @@
 const express = require('express');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const { Post, User, Image, Comment } = require('../models');
 
 const router = express.Router();
@@ -22,8 +22,9 @@ router.get('/', async (req, res, next) => {
       limit: 5,
       order: [
         ['createdAt', 'DESC'],
-        [Comment, 'createdAt', 'ASC']
+        // [Comment, 'createdAt', 'ASC']
       ],
+      // attributes: ['id', [Sequelize.fn('count', Sequelize.col('comment.id')), 'commentLength'], 'content', 'createdAt'],
       include: [{
         model: User,
         attributes: ['id', 'nickname'],
@@ -36,16 +37,11 @@ router.get('/', async (req, res, next) => {
         attributes: ['id', 'src'],
       },{
         model: Comment,
-        attributes: ['id', 'content', 'createdAt', 'PostId', 'ParentId'],
-        include: [{
-          model: User,
-          attributes: ['id', 'nickname'],
-          include: [{
-            model: Image,
-            attributes: ['id', 'src'],
-          }]
-        }]
-      }]
+        attributes: {
+          include: ['id',[Sequelize.fn("COUNT", Sequelize.col("comments.id")), "commentLegth"]]
+        },
+      }],
+      group: ['id']
     });
     res.status(200).json(posts);
   } catch (err) {
