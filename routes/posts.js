@@ -1,6 +1,5 @@
 const express = require('express');
-const { Op, Sequelize } = require('sequelize');
-const db = require('../models');
+const { Op } = require('sequelize');
 const { Post, User, Image, Comment } = require('../models');
 
 const router = express.Router();
@@ -23,21 +22,31 @@ router.get('/', async (req, res, next) => {
       limit: 5,
       order: [
         ['createdAt', 'DESC'],
+        [Comment, 'createdAt', 'ASC'],
       ],
       include: [{
         model: User,
         attributes: ['id', 'nickname'],
         include: [{
           model: Image,
-          attributes: ['id', 'src'],
+          attributes: ['src'],
         }]
       },{
         model: Image,
-        attributes: ['id', 'src'],
+        attributes: ['src'],
+      },{
+        model: Comment,
+        attributes: ['id', 'content', 'createdAt', 'PostId', 'ParentId'],
+        include: [{
+          model: User,
+          attributes: ['id', 'nickname'],
+          include: [{
+            model: Image,
+            attributes: ['src'],
+          }]
+        }]
       }],
-      group: ['Post.id']
     });
-    posts[0]['dataValues'].commentLength = await Comment.count({ where: {'postid': req.query.id} });
     res.status(200).json(posts);
   } catch (err) {
     console.error(err);

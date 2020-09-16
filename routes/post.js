@@ -18,7 +18,7 @@ router.post('/images', isLoggedIn,  upload.array('image'), async (req, res, next
   res.json(req.files.map((v) => v.filename));
 });
 
-router.post('/', upload.none(),isLoggedIn, async (req, res, next) => {
+router.post('/', upload.none(), isLoggedIn, async (req, res, next) => {
   // 경기정보도 들어있는 게시글
   try {
     const post = await Post.create({
@@ -40,10 +40,12 @@ router.post('/', upload.none(),isLoggedIn, async (req, res, next) => {
       where: { id: post.id },
       include: [{
         model: Image,
+        attributes: ['src', 'id'],
       },{
         model: Comment,
       },{
         model: User,
+        attributes: ['id', 'nickname'],
       },{
         model: Stadium,
       },{
@@ -82,7 +84,11 @@ router.post('/team', upload.none(), isLoggedIn, async (req, res, next) => {
         model: Comment,
       },{
         model: User,
-        attributes: ['id', 'nickname', 'LeaderId', 'TeamId'],
+        attributes: ['id', 'nickname', 'TeamId'],
+        include: [{
+          model: Image,
+          attributes: ['id','src'],
+        }]
       }]
     });
     res.status(201).json(fullPost);
@@ -117,7 +123,11 @@ router.post('/stadium', upload.none(), isLoggedIn, async (req, res, next) => {
         model: Comment,
       },{
         model: User,
-        attributes: ['id', 'nickname', 'LeaderId', 'TeamId'],
+        attributes: ['id', 'nickname', 'TeamId'],
+        include: [{
+          model: Image,
+          attributes: ['src'],
+        }],
       }]
     });
     res.status(201).json(fullPost);
