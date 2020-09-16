@@ -1,7 +1,7 @@
 const express = require('express');
 const moment = require('moment');
 
-const { Stadium, Image, Match, Team } = require('../models');
+const { Stadium, Image, Match, Team, User } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -41,6 +41,38 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
       await stadium.save();
     }
     res.status(201).send('done');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/:stadiumId/take', isLoggedIn, async (req, res, next) => {
+  try {
+    const isInTeam = await User.findOne({
+      where: { id : req.user.id },
+      attributes: ['id', 'nickname', 'LeaderId', 'TeamId', 'JoinInId'],
+    });
+    if (!isInTeam.TeamId) {
+      return res.status(401).send('팀에 가입 후 점령해주세요.');
+    }
+    const stadium = await Stadium.findOne({
+      where: { id: req.params.stadiumId },
+    });
+    stadium.TeamId = isInTeam.TeamId;
+    stadium.valid = moment().add(3, 'days').format('YYYY-MM-DD HH:mm:ss');
+    await stadium.save();
+    const afterStadiumInfo = await Stadium.findOne({
+      where: { id: req.params.stadiumId },
+      include: [{
+        model: Image,
+      },{
+        model: Match,
+      },{
+        model: Team,
+      }]
+    });
+    res.status(200).json(afterStadiumInfo);
   } catch (error) {
     console.error(error);
     next(error);
