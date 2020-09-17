@@ -4,10 +4,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      scores: {
-        type: DataTypes.STRING(5),
+      captrue: {
+        type: DataTypes.STRING(3),
         allowNull: false,
       },
+      confirm: {
+        type: DataTypes.STRING(3),
+        allowNull: true,
+      }
     }, {
       charset: 'utf8',
       collate: 'utf8_general_ci', 
@@ -15,8 +19,10 @@ module.exports = (sequelize, DataTypes) => {
 
   Match.associate = (db) => {
     db.Match.belongsTo(db.Stadium);
+    db.Match.belongsTo(db.Post);
     db.Match.belongsTo(db.Team, { as: 'Home' });
     db.Match.belongsTo(db.Team, { as: 'Away' });
+    db.Match.belongsTo(db.Team, { as: 'Winner' });
   };
 
   return Match;
