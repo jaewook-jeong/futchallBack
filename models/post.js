@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     db.Post.belongsTo(db.Team);
     db.Post.hasMany(db.Comment, { onDelete: 'cascade' });
     db.Post.hasMany(db.Image, { onDelete: 'cascade' });
+    db.Post.hasOne(db.Match);
   };
 
   return Post;

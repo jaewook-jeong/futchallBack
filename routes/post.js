@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 
-const { Post, Comment, Image, User, Stadium, Team } = require('../models');
+const { Post, Comment, Image, User, Stadium, Team, Match } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -27,6 +27,14 @@ router.post('/', upload.none(), isLoggedIn, async (req, res, next) => {
       TeamId: req.body.team,
       StadiumId: req.body.stadium,
     });
+    const match = await Match.create({
+      date: req.body.matchInfo.date,
+      capture: req.body.matchInfo.capture,
+      StadiumId: req.body.matchInfo.stadiumReq,
+      AwayId: req.user.TeamId,
+      HomeId: req.body.team,
+      PostId: post.id,
+    });
     if (req.body.image) {
       if (Array.isArray(req.body.image)) {
         const images = await Promise.all(req.body.image.map((image) => Image.create({ src: image })));
@@ -45,11 +53,26 @@ router.post('/', upload.none(), isLoggedIn, async (req, res, next) => {
         model: Comment,
       },{
         model: User,
-        attributes: ['id', 'nickname'],
+        attributes: ['id', 'nickname', 'TeamId'],
+        include: [{
+          model: Image,
+          attributes: ['id','src'],
+        }]
       },{
-        model: Stadium,
-      },{
-        model: Team,
+        model: Match,
+        attributes: ['date'],
+        include: [{
+          model: Team,
+          as: 'Home',
+          attributes: ['id', 'title']
+        },{
+          model: Team,
+          as: 'Away',
+          attributes: ['id', 'title']
+        },{
+          model: Stadium,
+          attributes: ['id', 'title', 'address']
+        }]
       }]
     });
     res.status(201).json(fullPost);

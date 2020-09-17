@@ -32,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       db.Team.hasMany(db.Image, { onDelete: 'cascade' });
       db.Team.hasOne(db.Match, { as: 'Home' });
       db.Team.hasOne(db.Match, { as: 'Away' });
+      db.Team.hasOne(db.Match, { as: 'Winner' });
       db.Team.hasOne(db.User, { as: 'Leader' });
       db.Team.hasMany(db.User, { as: 'JoinIn' });
     };
