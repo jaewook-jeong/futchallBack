@@ -174,7 +174,7 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
       content: req.body.content,
       PostId: req.params.postId,
       UserId: req.user.id,
-      ParentId: req.body.ParentId,
+      ParentId: req.body.parentId,
     });
     const fullComment = await Comment.findAll({
       where: { PostId: req.params.postId },

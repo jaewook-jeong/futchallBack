@@ -37,7 +37,7 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
     }
     if (req.user.TeamId) {
       stadium.TeamId = req.user.TeamId
-      stadium.valid = moment(stadium.createdAt, 'YYYY-MM-DD HH:mm:ss').add(3, 'days').format('YYYY-MM-DD HH:mm:ss');
+      stadium.valid = moment(stadium.createdAt, 'YYYY-MM-DD HH:mm:ss').add(3, 'days').format('YYYY-MM-DD HH:00:00');
       await stadium.save();
     }
     res.status(201).send('done');
@@ -60,7 +60,7 @@ router.post('/:stadiumId/take', isLoggedIn, async (req, res, next) => {
       where: { id: req.params.stadiumId },
     });
     stadium.TeamId = isInTeam.TeamId;
-    stadium.valid = moment().add(3, 'days').format('YYYY-MM-DD HH:mm:ss');
+    stadium.valid = moment().add(3, 'days').format('YYYY-MM-DD HH:00:00');
     await stadium.save();
     const afterStadiumInfo = await Stadium.findOne({
       where: { id: req.params.stadiumId },
@@ -91,6 +91,33 @@ router.get('/:stadiumId', async (req, res, next) => {
         model: Team,
       }]
     });
+    if (moment().diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0){
+      // const now = moment();
+      // console.log(now);
+      // console.log(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format());
+      // console.log(now.diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'days'));
+      // console.log(now.diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours'));
+      // console.log(now.diff(moment('2020-09-15 14:00:00', 'YYYY-MM-DD HH:00:00').format(), 'days'));
+      // console.log(now.diff(moment('2020-09-15 14:00:00', 'YYYY-MM-DD HH:00:00').format(), 'hours'));
+      // console.log(now.diff(moment('2020-09-15 15:00:00', 'YYYY-MM-DD HH:00:00').format(), 'days'));
+      // console.log(now.diff(moment('2020-09-15 15:00:00', 'YYYY-MM-DD HH:00:00').format(), 'hours'));
+      console.log("들어옴!");
+      stadium.valid = null;
+      stadium.TeamId = null;
+      await stadium.save();
+      const deleteValidStadium = await Stadium.findOne({
+        where: { id: req.params.stadiumId },
+        include: [{
+          model: Image,
+        },{
+          model: Match,
+        },{
+          model: Team,
+        }]
+      });
+      return res.status(200).json(deleteValidStadium);
+    }
+    
     res.status(200).json(stadium);
   } catch (error) {
     console.error(error);

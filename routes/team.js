@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require('sequelize');
 
 const { Team, User, Image, Stadium, Match } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
@@ -34,15 +35,47 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
 
 router.get('/:teamId/management/:tabId', isLoggedIn, async (req, res, next) => {
   try {
+    if (req.user.LeaderId != req.params.teamId) {
+      return res.status(403).send('접근권한이 없습니다!');
+    }
     if (req.params.tabId === "1") {
       //경기관리
       const matchList = await Match.findAll({
+        order: ['date', 'DESC'],
         where: {
-          HomeId: req.params.teamId,
-          confirm: 'N',
+          [Op.or]: [{ HomeId: req.params.teamId }, { awayId: req.params.teamId }]
+        },
+        attributes: {
+          exclude : ['updatedAt', 'createdAt']
+        },
+        include: [{
+          model: Team,
+          as: 'Home',
+          attributes: ['title']
+        },{
+          model: Team,
+          as: 'Away',
+          attributes: ['title']
+        },{
+          model: Team,
+          as: 'Winner',
+          attributes: ['title']
+        },{
+          model: Stadium,
+          attributes: ['title']
+        }]
+      });
+      
+      const matchList2 = matchList.map((v) => {
+        return {
+          ...v.dataValues,
+          TeamId: req.user.TeamId,
         }
       });
-      return res.status(200).json(matchList);
+      console.log('------------------------------------');
+      console.log(matchList2);
+      console.log('------------------------------------');
+      return res.status(200).json(matchList2);
     } else if (req.params.tabId === "2") {
       //입단신청
       const joinList = await User.findAll({
