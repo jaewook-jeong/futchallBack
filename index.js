@@ -15,6 +15,7 @@ const postsAPIRouter = require('./routes/posts');
 const teamAPIRouter = require('./routes/team');
 const stadiumAPIRouter = require('./routes/stadium');
 const stadiaAPIRouter = require('./routes/stadia');
+const matchAPIRouter = require('./routes/match');
 
 dotenv.config();
 const app = express();
@@ -48,6 +49,7 @@ app.use('/posts', postsAPIRouter);
 app.use('/team', teamAPIRouter);
 app.use('/stadium', stadiumAPIRouter);
 app.use('/stadia', stadiaAPIRouter);
+app.use('/match', matchAPIRouter);
 
 // app.use((err, req, res, next) => {
 // // 에러처리 미들웨어 custom 가능, 여기부분에서!
