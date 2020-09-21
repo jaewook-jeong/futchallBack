@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      captrue: {
+      capture: {
         type: DataTypes.STRING(3),
         allowNull: false,
       },
