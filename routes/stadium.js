@@ -1,5 +1,6 @@
 const express = require('express');
 const moment = require('moment');
+const { Op } = require('sequelize');
 
 const { Stadium, Image, Match, Team, User } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
@@ -41,6 +42,32 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
       await stadium.save();
     }
     res.status(201).send('done');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/search', isLoggedIn, async (req, res, next) => {
+  try {
+    const stadia = await Stadium.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${req.query.q}%`,
+        },
+        TeamId: {
+          [Op.ne]: null,
+          [Op.ne]: req.user.LeaderId,
+        },
+      },
+      limit: 5,
+      include: [{
+        model: Team,
+        attributes: ['title', 'id']
+      }]
+    });
+    console.log(stadia);
+    res.status(200).json(stadia);
   } catch (error) {
     console.error(error);
     next(error);
@@ -94,7 +121,7 @@ router.get('/:stadiumId', async (req, res, next) => {
     if (moment().diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0){
       // const now = moment();
       // console.log(now);
-      // console.log(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format());
+      console.log(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format());
       // console.log(now.diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'days'));
       // console.log(now.diff(moment(stadium.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours'));
       // console.log(now.diff(moment('2020-09-15 14:00:00', 'YYYY-MM-DD HH:00:00').format(), 'days'));

@@ -41,7 +41,7 @@ router.get('/:teamId/management/:tabId', isLoggedIn, async (req, res, next) => {
     if (req.params.tabId === "1") {
       //경기관리
       const matchList = await Match.findAll({
-        order: ['date', 'DESC'],
+        order: [['date', 'DESC']],
         where: {
           [Op.or]: [{ HomeId: req.params.teamId }, { awayId: req.params.teamId }]
         },

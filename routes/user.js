@@ -4,6 +4,7 @@ const passport = require('passport');
 
 const db = require('../models');
 const { isLoggedIn, isNotLoggedIn, upload } = require('./middlewares');
+const { User } = require('../models');
 const router = express.Router();
 
 router.post('/image', isNotLoggedIn, upload.single('image'), async (req, res, next) => {
@@ -36,6 +37,34 @@ router.get('/', async (req, res, next) => {
     next(error);
   }
 })
+
+router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
+  try {
+    if (!req.user.LeaderId) {
+      return res.status(403).send('권한이 없습니다.');
+    }
+    const user = await User.findOne({
+      where: {
+        id: req.body.value,
+        JoinInId: req.user.LeaderId,
+      }
+    });
+    if (!user) {
+      return res.status(403).send('해당 팀에 가입을 요청한 사용자가 없습니다.');
+    }
+    user.JoinInId = null;
+    if (req.body.action === 'approve'){
+      user.TeamId = req.user.LeaderId;
+      await user.save();
+      return res.status(200).send('해당 사용자의 가입을 처리하였습니다!');
+    }
+    await user.save();
+    return res.status(200).send('해당 사용자의 가입요청을 거절하였습니다.');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 router.post('/login', isNotLoggedIn, (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
