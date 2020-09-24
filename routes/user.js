@@ -219,11 +219,10 @@ router.patch('/pwd', isLoggedIn, async (req, res, next) => {
           id: req.user.id,
         }
       });
-      res.send('ok');
+      res.status(200).send('ok');
     } else {
-
+      return res.status(403).send('비밀번호가 일치하지 않습니다.');
     }
-    
   } catch (error) {
     console.error(error);
     next(error);
