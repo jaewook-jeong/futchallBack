@@ -101,6 +101,38 @@ router.get('/:teamId/management/:tabId', isLoggedIn, async (req, res, next) => {
   }
 })
 
+router.patch('/:teamId', isLoggedIn, async (req, res, next) => {
+  try {
+    if (req.user.LeaderId !== parseInt(req.params.teamId, 10)) {
+      return res.status(403).send('권한이 없습니다.');
+    }
+    await Team.update({
+      ...req.body
+    },{
+      where: {
+        id: req.params.teamId,
+      }
+    })
+    const team = await Team.findOne({
+      where: { id: req.params.teamId },
+      include: [{
+        model: Image,
+        attributes: ['id', 'src'],
+      },{
+        model: User,
+        attributes: ['nickname', 'id', 'positions', 'LeaderId'],
+      },{
+        model: Stadium,
+        attributes: ['lat', 'lng', 'id', 'title']
+      }]
+    });
+    res.status(200).json(team);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.get('/:teamId', async (req, res, next) => {
   try {
     const team = await Team.findOne({
