@@ -56,10 +56,10 @@ router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
     if (req.body.action === 'approve'){
       user.TeamId = req.user.LeaderId;
       await user.save();
-      return res.status(200).send('해당 사용자의 가입을 처리하였습니다!');
+      return res.status(200).json(user);
     }
     await user.save();
-    return res.status(200).send('해당 사용자의 가입요청을 거절하였습니다.');
+    return res.status(200).json(user);
   } catch (error) {
     console.error(error);
     next(error);
