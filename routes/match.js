@@ -1,8 +1,55 @@
 const express = require('express');
-const { Match, Stadium } = require('../models');
+const { Match, Stadium, Team } = require('../models');
 const { isLoggedIn } = require('./middlewares');
+const { Op } = require('sequelize');
 const moment = require('moment');
 const router = express.Router();
+
+router.get('/team/:teamId', isLoggedIn, async (req, res, next) => {
+  try {
+    if (req.user.LeaderId != req.params.teamId) {
+      return res.status(403).send('접근권한이 없습니다!');
+    }
+    const matchList = await Match.findAll({
+      order: [['date', 'DESC']],
+      where: {
+        [Op.or]: [{ HomeId: req.params.teamId }, { awayId: req.params.teamId }]
+      },
+      attributes: {
+        exclude : ['updatedAt', 'createdAt']
+      },
+      include: [{
+        model: Team,
+        as: 'Home',
+        attributes: ['title']
+      },{
+        model: Team,
+        as: 'Away',
+        attributes: ['title']
+      },{
+        model: Team,
+        as: 'Winner',
+        attributes: ['title']
+      },{
+        model: Stadium,
+        attributes: ['title']
+      }]
+    });
+    matchList.map(async(v) => {
+      if (!v.confirm){
+        if (moment().diff(moment(v.date.toString()).locale('ko').format('YYYY-MM-DD HH:mm'), 'hours') > -3) {
+          v.confirm = 'T';
+          await v.save();
+          return v;
+        }
+      }
+    });
+    res.status(200).json(matchList);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+})
 
 router.post('/capture', isLoggedIn, async (req, res, next) => {
   try {
@@ -51,7 +98,17 @@ router.patch('/:matchId/winner/:teamId', isLoggedIn, async (req, res, next) => {
       stadium.TeamId = req.params.teamId;
       await stadium.save();
     }
-    res.status(200).send("success");
+    const fullmatch = await Match.findOne({
+      where: {
+        id: req.params.matchId,
+      },
+      include: [{
+        model: Team,
+        as: 'Winner',
+        attributes: ['title']
+      }]
+    });
+    res.status(200).json(fullmatch);
   } catch (error) {
     console.error(error);
     next(error);
@@ -86,7 +143,17 @@ router.patch('/:matchId/loser/:teamId', isLoggedIn, async (req, res, next) => {
       stadium.TeamId = req.params.teamId == match.HomeId ? match.AwayId : match.HomeId;
       await stadium.save();
     }
-    res.status(200).send("success");
+    const fullMatch = await Match.findOne({
+      where: {
+        id: req.params.matchId,
+      },
+      include: [{
+        model: Team,
+        as: 'Winner',
+        attributes: ['title']
+      }]
+    })
+    res.status(200).json(fullMatch);
   } catch (error) {
     console.error(error);
     next(error);
@@ -109,7 +176,17 @@ router.patch('/:matchId/approve', isLoggedIn, async (req, res, next) => {
     }
     match.confirm = 'Y';
     await match.save();
-    res.status(200).send("success");
+    // 점령 신청한 모든 게임 취소하기
+    await Match.update({
+      confirm: 'N',
+    },{
+      where: {
+        StadiumId: match.StadiumId,
+        capture: 'Y',
+        confirm: null,
+      }
+    });
+    res.status(200).json(match);
   } catch (error) {
     console.error(error);
     next(error);
@@ -132,7 +209,7 @@ router.patch('/:matchId/cancel', isLoggedIn, async (req, res, next) => {
     }
     match.confirm = 'N';
     await match.save();
-    res.status(200).send("success");
+    res.status(200).json(match);
   } catch (error) {
     console.error(error);
     next(error);
