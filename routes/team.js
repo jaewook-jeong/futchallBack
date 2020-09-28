@@ -1,7 +1,7 @@
 const express = require('express');
 const { Op } = require('sequelize');
 
-const { Team, User, Image, Stadium, Match } = require('../models');
+const { Team, User, Image, Stadium, Match, Post } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -33,20 +33,48 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/:teamId/management/:tabId', isLoggedIn, async (req, res, next) => {
+router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
       return res.status(403).send('접근권한이 없습니다!');
     }
-    if (req.params.tabId === "1") {
-      //경기관리
-      const matchList = await Match.findAll({
-        order: [['date', 'DESC']],
+    const joinList = await User.findAll({
+      where: {
+        JoinInId: req.params.teamId
+      },
+      attributes: ['id', 'nickname', 'positions', 'age', 'locations']
+    });
+    res.status(200).json(joinList);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/:teamId/:tabId', async (req, res, next) => {
+  try {
+    if(req.params.tabId === '1') {
+      return res.status(200);
+    }
+    if (req.params.tabId === '2') {
+      // team member list
+      const memberList = await User.findAll({
         where: {
-          [Op.or]: [{ HomeId: req.params.teamId }, { awayId: req.params.teamId }]
+          TeamId: req.params.teamId,
         },
+        attributes: ['id', 'LeaderId', 'positions', 'nickname']
+      });
+      return res.status(200).json(memberList);
+    }
+    if (req.params.tabId === '3') {
+      const matchList = await Match.findAll({
+        where: {
+          [Op.or]: [{ HomeId: req.params.teamId }, { awayId: req.params.teamId }],
+          confirm: 'Y',
+        },
+        order:[['date', 'DESC']],
         attributes: {
-          exclude : ['updatedAt', 'createdAt']
+          exclude : ['updatedAt', 'createdAt', 'confirm']
         },
         include: [{
           model: Team,
@@ -65,41 +93,29 @@ router.get('/:teamId/management/:tabId', isLoggedIn, async (req, res, next) => {
           attributes: ['title']
         }]
       });
-      
-      const matchList2 = matchList.map((v) => {
-        return {
-          ...v.dataValues,
-          TeamId: req.user.TeamId,
-        }
-      });
-      console.log('------------------------------------');
-      console.log(matchList2);
-      console.log('------------------------------------');
-      return res.status(200).json(matchList2);
-    } else if (req.params.tabId === "2") {
-      //입단신청
-      const joinList = await User.findAll({
-        where: {
-          JoinInId: req.params.teamId
-        },
-        attributes: ['id', 'nickname', 'positions', 'age', 'locations']
-      });
-      return res.status(200).json(joinList);
-    } else if (req.params.tabId === "3") {
-      //팀정보수정
-      const teamInfo = await Team.findOne({
-        where: {
-          id: req.params.teamId
-        },
-      });
-      return res.status(200).json(teamInfo);
+      return res.status(200).json(matchList);
     }
-    res.status(404).send("탭 아이디가 없어요.");
+    if (req.params.tabId === '4') {
+      const pictureList = await Post.findAll({
+        where: {
+          TeamId: req.params.teamId
+        },
+        attributes: ['Images.id', 'Images.src'],
+        include: [{
+          model: Image,
+          attributes: {
+            exclude: ['updatedAt', 'createdAt', 'UserId']
+          },
+        }]
+      });
+      return res.status(200).json(pictureList);
+    }
+    res.status(404).send('오류발생');
   } catch (error) {
     console.error(error);
     next(error);
   }
-})
+});
 
 router.patch('/:teamId', isLoggedIn, async (req, res, next) => {
   try {
@@ -140,10 +156,6 @@ router.get('/:teamId', async (req, res, next) => {
       include: [{
         model: Image,
         attributes: ['id', 'src'],
-      },{
-        model: User,
-        // where: { TeamId: req.params.teamId },
-        attributes: ['nickname', 'id', 'positions', 'LeaderId'],
       },{
         model: Stadium,
         attributes: ['lat', 'lng', 'id', 'title']
