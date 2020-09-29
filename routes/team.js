@@ -54,7 +54,7 @@ router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
 router.get('/:teamId/:tabId', async (req, res, next) => {
   try {
     if(req.params.tabId === '1') {
-      return res.status(200);
+      return res.status(200).send('ok');
     }
     if (req.params.tabId === '2') {
       // team member list

@@ -45,7 +45,7 @@ router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
     }
     const user = await User.findOne({
       where: {
-        id: req.body.value,
+        id: req.body.userId,
         JoinInId: req.user.LeaderId,
       }
     });
