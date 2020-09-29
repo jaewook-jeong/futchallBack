@@ -1,6 +1,6 @@
 const express = require('express');
 const moment = require('moment');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 const { Stadium, Image, Match, Team, User } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
@@ -48,8 +48,9 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/search', isLoggedIn, async (req, res, next) => {
+router.get('/istaken', isLoggedIn, async (req, res, next) => {
   try {
+    
     const stadia = await Stadium.findAll({
       where: {
         title: {
@@ -60,14 +61,29 @@ router.get('/search', isLoggedIn, async (req, res, next) => {
           [Op.ne]: req.user.LeaderId,
         },
       },
+      attributes:['id', 'title', 'valid'],
       limit: 5,
       include: [{
         model: Team,
         attributes: ['title', 'id']
+      },{
+        model: Match,
+        required: false,
+        where: {
+          //점령전이고, 승인이 되었고, 결과가 나오지 않은 경기
+          capture: {
+            [Op.eq]: 'Y',
+          },
+          confirm: {
+            [Op.eq]: 'Y'
+          },
+          WinnerId: {
+            [Op.eq]: null,
+          },
+        }
       }]
     });
-    console.log(stadia);
-    res.status(200).json(stadia);
+    res.status(200).json(stadia.filter((v) => v.Matches.length === 0));
   } catch (error) {
     console.error(error);
     next(error);
