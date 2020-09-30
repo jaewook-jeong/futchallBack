@@ -33,6 +33,33 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.get('/search', async (req, res, next) => {
+  try {
+    const searchTeamList = await Team.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${req.query.q}%`
+        }
+      },
+      attributes: ['title', 'id'],
+      limit: 5,
+    });
+    const searchStadiumList = await Stadium.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${req.query.q}%`
+        }
+      },
+      attributes: ['id', 'title', 'address'],
+      limit: 5,
+    });
+    res.status(200).json([searchStadiumList, searchTeamList])
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
