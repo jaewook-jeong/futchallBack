@@ -1,7 +1,8 @@
 const express = require('express');
-const { Op } = require('sequelize');
+const { Op, sequelize } = require('sequelize');
+const db = require('../models');
 
-const { Team, User, Image, Stadium, Match, Post } = require('../models');
+const { Team, User, Image, Stadium, Match, Post, Sequelize } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -33,7 +34,47 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/search', async (req, res, next) => {
+router.post('/search', async (req, res, next) => {
+  try {
+    const query1 = `SELECT * FROM stadia WHERE REPLACE(title, ' ', '') like :query`;
+    const query2 = `SELECT * FROM posts WHERE REPLACE(content, ' ', '') like :query`;
+    const query3 = `SELECT * FROM teams WHERE REPLACE(description, ' ', '') like :query`;
+
+    const stadiumList = await db.sequelize.query(
+      query1,
+      {
+        replacements: {
+          query: `%${req.body.query}%`
+        }, 
+        type: Sequelize.QueryTypes.SELECT, 
+        raw: true
+      });
+    const postList = await db.sequelize.query(
+      query2, 
+      {
+        replacements: {
+          query: `%${req.body.query}%`,
+        }, 
+        type: Sequelize.QueryTypes.SELECT, 
+        raw: true
+      });
+    const teamList = await db.sequelize.query(
+      query3, 
+      {
+        replacements: {
+          query: `%${req.body.query}%`,
+        }, 
+        type: Sequelize.QueryTypes.SELECT, 
+        raw: true
+      });
+    res.status(200).json([postList, stadiumList, teamList]);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/autocomplete', async (req, res, next) => {
   try {
     const searchTeamList = await Team.findAll({
       where: {
