@@ -195,6 +195,57 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.get('/:postId', async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      where: {
+        id: req.params.postId,
+      },
+      include: [{
+        model: User,
+        attributes: ['id', 'nickname'],
+        include: [{
+          model: Image,
+          attributes: ['src'],
+        }]
+      },{
+        model: Image,
+        attributes: ['src'],
+      },{
+        model: Match,
+        attributes: ['date'],
+        include: [{
+          model: Team,
+          as: 'Home',
+          attributes: ['id', 'title']
+        },{
+          model: Team,
+          as: 'Away',
+          attributes: ['id', 'title']
+        },{
+          model: Stadium,
+          attributes: ['id', 'title', 'address']
+        }]
+      },{
+        model: Comment,
+        attributes: ['id', 'content', 'createdAt', 'PostId', 'ParentId'],
+        include: [{
+          model: User,
+          attributes: ['id', 'nickname'],
+          include: [{
+            model: Image,
+            attributes: ['src'],
+          }]
+        }]
+      }],
+    });
+    res.status(200).json(post);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.delete('/:postId', isLoggedIn, async (req, res, next) => {
   try {
     await Post.destroy({
