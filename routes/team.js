@@ -36,15 +36,21 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
 
 router.post('/search', async (req, res, next) => {
   try {
-    const query1 = `SELECT * FROM stadia WHERE REPLACE(title, ' ', '') like :query`;
-    const query2 = `SELECT * FROM posts WHERE REPLACE(content, ' ', '') like :query`;
-    const query3 = `SELECT * FROM teams WHERE REPLACE(description, ' ', '') like :query`;
+    const query1 = `SELECT stadia.id, stadia.title, stadia.address, stadia.description, images.src
+                    FROM stadia left outer join images on stadia.id = images.StadiumId
+                    WHERE REPLACE(stadia.title, ' ', '') like :query or REPLACE(stadia.description, ' ', '') like :query`;
+    const query2 = `SELECT posts.content, posts.id, users.nickname, posts.createdAt, images.src
+                    FROM posts left outer join users on posts.UserId = Users.id left outer join images on posts.id = images.PostId
+                    WHERE REPLACE(posts.content, ' ', '') like :query`;
+    const query3 = `SELECT teams.id, teams.title, teams.description, images.src, teams.location
+                    FROM teams left outer join images on teams.id = images.TeamId
+                    WHERE REPLACE(teams.description, ' ', '') like :query or REPLACE(teams.title, ' ', '') like :query`;
 
     const stadiumList = await db.sequelize.query(
       query1,
       {
         replacements: {
-          query: `%${req.body.query}%`
+          query: `%${req.body.query.replace(/ /gi, '')}%`
         }, 
         type: Sequelize.QueryTypes.SELECT, 
         raw: true
@@ -53,7 +59,7 @@ router.post('/search', async (req, res, next) => {
       query2, 
       {
         replacements: {
-          query: `%${req.body.query}%`,
+          query: `%${req.body.query.replace(/ /gi, '')}%`,
         }, 
         type: Sequelize.QueryTypes.SELECT, 
         raw: true
@@ -62,7 +68,7 @@ router.post('/search', async (req, res, next) => {
       query3, 
       {
         replacements: {
-          query: `%${req.body.query}%`,
+          query: `%${req.body.query.replace(/ /gi, '')}%`,
         }, 
         type: Sequelize.QueryTypes.SELECT, 
         raw: true
