@@ -49,7 +49,23 @@ router.get('/team/:teamId', isLoggedIn, async (req, res, next) => {
     console.error(error);
     next(error);
   }
-})
+});
+
+router.post('/reservation', isLoggedIn, async (req, res, next) => {
+  try {
+    const match = await Match.create({
+      date: req.body.date,
+      capture: 'N',
+      HomeId: req.body.HomeId,
+      StadiumId: req.body.StadiumId,
+      AwayId: req.user.LeaderId,
+    });
+    return res.status(201).send('경기신청을 완료하였습니다!')
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 router.post('/capture', isLoggedIn, async (req, res, next) => {
   try {

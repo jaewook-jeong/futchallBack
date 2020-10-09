@@ -2,7 +2,7 @@ const express = require('express');
 const moment = require('moment');
 const { Op, Sequelize } = require('sequelize');
 
-const { Stadium, Image, Match, Team, User } = require('../models');
+const { Stadium, Image, Match, Team, User, Post } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -42,6 +42,24 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
       await stadium.save();
     }
     res.status(201).send('done');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/search', isLoggedIn, async (req, res, next) => {
+  try {
+    const searchList = await Stadium.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${req.query.q}%`,
+        }
+      },
+      limit: 5,
+      attributes: ['id', 'title'],
+    });
+    res.status(200).json(searchList);
   } catch (error) {
     console.error(error);
     next(error);
@@ -119,6 +137,68 @@ router.post('/:stadiumId/take', isLoggedIn, async (req, res, next) => {
   } catch (error) {
     console.error(error);
     next(error);
+  }
+});
+
+router.get('/:stadiumId/:tabId', async (req, res, next) => {
+  try {
+    if(req.params.tabId === '1') {
+      return res.status(200).send('ok');
+    }
+    if (req.params.tabId === '2') {
+      // stadium match list
+      const matchList = await Match.findAll({
+        where: {
+          StadiumId: req.params.stadiumId,
+          confirm: 'Y',
+        },
+        order:[['date', 'DESC']],
+        attributes: {
+          exclude : ['updatedAt', 'createdAt']
+        },
+        include: [{
+          model: Team,
+          as: 'Home',
+          attributes: ['title']
+        },{
+          model: Team,
+          as: 'Away',
+          attributes: ['title']
+        },{
+          model: Team,
+          as: 'Winner',
+          attributes: ['title']
+        },{
+          model: Stadium,
+          attributes: ['title']
+        }]
+      });
+      return res.status(200).json(matchList);
+    }
+    if (req.params.tabId === '3') {
+      const pictureList = await Post.findAll({
+        where: {
+          StadiumId: req.params.stadiumId
+        },
+        attributes: ['Images.id', 'Images.src'],
+        include: [{
+          model: Image,
+          required: true,
+          attributes: {
+            exclude: ['updatedAt', 'createdAt', 'UserId']
+          },
+        }]
+      });
+      return res.status(200).json(pictureList);
+    }
+    res.status(404).send('오류발생');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+  if (req.params.tabId == '4') {
+    //후기
+    return res.status(200).send('ok');
   }
 });
 
