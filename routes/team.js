@@ -80,6 +80,27 @@ router.post('/search', async (req, res, next) => {
   }
 });
 
+router.get('/search', isLoggedIn, async (req, res, next) => {
+  try {
+    const searchList = await Team.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${req.query.q}%`,
+        },
+        id: {
+          [Op.ne]: req.user.LeaderId,
+        }
+      },
+      limit: 5,
+      attributes: ['id', 'title'],
+    });
+    res.status(200).json(searchList);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.get('/autocomplete', async (req, res, next) => {
   try {
     const searchTeamList = await Team.findAll({
@@ -148,7 +169,7 @@ router.get('/:teamId/:tabId', async (req, res, next) => {
         },
         order:[['date', 'DESC']],
         attributes: {
-          exclude : ['updatedAt', 'createdAt', 'confirm']
+          exclude : ['updatedAt', 'createdAt']
         },
         include: [{
           model: Team,
