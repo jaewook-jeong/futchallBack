@@ -238,10 +238,10 @@ router.get('/:stadiumId', async (req, res, next) => {
           model: Team,
         }]
       });
-      return res.status(200).json(deleteValidStadium);
+      return res.status(200).json({data : deleteValidStadium, expired: true});
     }
     
-    res.status(200).json(stadium);
+    res.status(200).json({data : stadium, expired: false});
   } catch (error) {
     console.error(error);
     next(error);
