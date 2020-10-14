@@ -2,7 +2,7 @@ const express = require('express');
 const { Op, sequelize } = require('sequelize');
 const db = require('../models');
 
-const { Team, User, Image, Stadium, Match, Post, Sequelize } = require('../models');
+const { Team, User, Image, Stadium, Match, Post, Sequelize, Calendar } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
@@ -140,6 +140,26 @@ router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
       attributes: ['id', 'nickname', 'positions', 'age', 'locations']
     });
     res.status(200).json(joinList);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/:teamId/calendar', isLoggedIn, async (req, res, next) => {
+  try {
+    if (req.params.teamId !== req.user.TeamId) {
+      return res.status(403).send('해당 정보에 접근할 권한이 없습니다.');
+    }
+    const calendar = await Calendar.findAll({
+      where: {
+        TeamId: req.params.teamId,
+        date: {
+          [Op.between]: [data.startDate, data.endDate],
+        }
+      }
+    });
+    res.status(200).json(calendar);
   } catch (error) {
     console.error(error);
     next(error);

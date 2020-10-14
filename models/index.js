@@ -12,6 +12,7 @@ db.Post = require('./post')(sequelize, Sequelize);
 db.Match = require('./match')(sequelize, Sequelize);
 db.Image = require('./image')(sequelize, Sequelize);
 db.Comment = require('./comment')(sequelize, Sequelize);
+db.Calendar = require('./calendar')(sequelize, Sequelize);
 
 
 

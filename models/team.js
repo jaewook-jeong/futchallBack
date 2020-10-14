@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     Team.associate = (db) => {
       db.Team.hasMany(db.User);
       db.Team.hasMany(db.Stadium);
+      db.Team.hasMany(db.Calendar, { onDelete: 'cascade' });
       db.Team.hasMany(db.Post, { onDelete: 'cascade' });
       db.Team.hasMany(db.Image, { onDelete: 'cascade' });
       db.Team.hasOne(db.Match, { as: 'Home' });
