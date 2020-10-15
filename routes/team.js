@@ -1,6 +1,7 @@
 const express = require('express');
 const { Op, sequelize } = require('sequelize');
 const db = require('../models');
+const moment = require('moment');
 
 const { Team, User, Image, Stadium, Match, Post, Sequelize, Calendar } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
@@ -148,18 +149,31 @@ router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
 
 router.post('/:teamId/calendar', isLoggedIn, async (req, res, next) => {
   try {
-    if (req.params.teamId !== req.user.TeamId) {
+    if (parseInt(req.params.teamId, 10) !== req.user.TeamId) {
       return res.status(403).send('해당 정보에 접근할 권한이 없습니다.');
     }
     const calendar = await Calendar.findAll({
       where: {
         TeamId: req.params.teamId,
         date: {
-          [Op.between]: [data.startDate, data.endDate],
+          [Op.between]: [req.body.startDate, req.body.endDate],
         }
-      }
+      },
+      attributes: {
+        exclude : ['updatedAt', 'createdAt']
+      },
+      include: [{
+        model: User,
+        attributes: ['id', 'nickname']
+      }]
     });
-    res.status(200).json(calendar);
+    res.status(200).json(calendar.map((v) => {
+      const date = moment(v.date).locale('ko').format('YYYY-MM-DD');
+      return {
+        ...v.dataValues,
+        date,
+      }
+    }));
   } catch (error) {
     console.error(error);
     next(error);
