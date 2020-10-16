@@ -129,6 +129,51 @@ router.get('/autocomplete', async (req, res, next) => {
   }
 });
 
+router.post('/calendar', isLoggedIn, async (req, res, next) => {
+  try {
+    await Calendar.destroy({
+      where: {
+        UserId: req.user.id,
+        date: req.body.date,
+      }
+    });
+    if (Array.isArray(req.body.possible)) {
+      await Promise.all(req.body.possible.map((possible) => Calendar.create({
+        date: req.body.date,
+        possible,
+        UserId: req.user.id,
+        TeamId: req.user.TeamId,
+      })));
+    } else {
+      await Calendar.create({
+        date: req.body.date,
+        possible: req.body.possible,
+        UserId: req.user.id,
+        TeamId: req.user.TeamId,
+      });
+    }
+    const calendar = await Calendar.findAll({
+      where: {
+        TeamId: req.user.TeamId,
+        date: {
+          [Op.between]: [moment(req.body.date).startOf('month').format('YYYY-MM-DD'), moment(req.body.date).endOf('month').format('YYYY-MM-DD')],
+        }
+      },
+      attributes: {
+        exclude : ['updatedAt', 'createdAt']
+      },
+      include: [{
+        model: User,
+        attributes: ['id', 'nickname']
+      }]
+    });
+    res.status(200).json(calendar);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.get('/:teamId/joinlist', isLoggedIn, async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
@@ -167,13 +212,7 @@ router.post('/:teamId/calendar', isLoggedIn, async (req, res, next) => {
         attributes: ['id', 'nickname']
       }]
     });
-    res.status(200).json(calendar.map((v) => {
-      const date = moment(v.date).locale('ko').format('YYYY-MM-DD');
-      return {
-        ...v.dataValues,
-        date,
-      }
-    }));
+    res.status(200).json(calendar);
   } catch (error) {
     console.error(error);
     next(error);
