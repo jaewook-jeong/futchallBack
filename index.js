@@ -41,7 +41,7 @@ app.use(expressSession({
   secret: process.env.COOKIE_SECRET,
 }));
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 app.use('/user', userAPIRouter);
 app.use('/post', postAPIRouter);
