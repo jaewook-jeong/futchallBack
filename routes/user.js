@@ -1,34 +1,45 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
 
 const db = require('../models');
 const { isLoggedIn, isNotLoggedIn, upload } = require('./middlewares');
+
 const { User } = require('../models');
 const router = express.Router();
+require('dotenv').config();
+
 
 router.post('/image', isNotLoggedIn, upload.single('image'), async (req, res, next) => {
   console.log(req.file);
   res.json(req.file.filename);
 })
 
-router.get('/', async (req, res, next) => {
+router.get('/', (req, res, next) => {
   try {
-    if (req.user){
-      const fullUserWithoutPwd = await db.User.findOne({
-        where: { id : req.user.id },
-        attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
-        include: [{
-          model: db.Team,
-          attributes: ['id', 'title'],
-        }, {
-          model: db.Post,
-          attributes: ['id'],
-        }, {
-          model: db.Image,
-        }]
-      })
-      res.status(200).json(fullUserWithoutPwd);
+    const token = req.cookies['AuthToken'];
+    if (token){
+      jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+        if (err) {
+          console.error(err);
+          next(err);
+        }
+        const fullUserWithoutPwd = await db.User.findOne({
+          where: { id : decoded.id },
+          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
+          include: [{
+            model: db.Team,
+            attributes: ['id', 'title'],
+          }, {
+            model: db.Post,
+            attributes: ['id'],
+          }, {
+            model: db.Image,
+          }]
+        })
+        res.status(200).json(fullUserWithoutPwd);
+      });
     } else {
       res.status(200).json(null);
     }
@@ -66,8 +77,8 @@ router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/login', isNotLoggedIn, (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
       console.error(err);
       return next(err);
@@ -75,7 +86,7 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
     if (info) {
       return res.status(401).send(info.reason);
     }
-    return req.login(user, async (loginErr) => {
+    return req.login(user, { session: false }, async (loginErr) => {
       if (loginErr) {
         console.error(loginErr);
         return next(loginErr);
@@ -92,8 +103,10 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         }, {
           model: db.Image,
         }]
-      })
-      return res.status(200).json(fullUserWithoutPwd);
+      });
+      const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: req.body.remember === 'Y' ? '30d' : '1d' });
+      res.cookie('AuthToken', token, { httpOnly: true, maxAge: req.body.remember ? 60 * 60 * 24 * 30 * 1000 : 60 * 60 * 24 * 1000 });
+      res.status(200).json(fullUserWithoutPwd);
     });
   })(req, res, next);
 });
@@ -146,7 +159,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       const image = await db.Image.create({ src: req.body.image });
       await user.addImages(image);
     }
-    passport.authenticate('local', (err, user, info) => {
+    passport.authenticate('local', { session: false},  (err, user, info) => {
       if (err) {
         console.error(err);
         return next(err);
@@ -154,7 +167,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       if (info) {
         return res.status(401).send(info.reason);
       }
-      return req.login(user, async (loginErr) => {
+      return req.login(user, { session: false }, async (loginErr) => {
         if (loginErr) {
           console.error(loginErr);
           return next(loginErr);
@@ -173,6 +186,8 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
             attributes: ['id', 'src'],
           }]
         });
+        const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 1000 });
         return res.status(200).json(fullUserWithoutPwd);
       });
     })(req, res, next);
@@ -198,10 +213,9 @@ router.post('/isTaken', async (req, res, next) => {
   }
 });
 
-router.post('/logout', isLoggedIn, async (req, res) => {
-  req.logOut();
-  req.session.destroy();
-  res.send('ok');
+router.post('/logout', async (req, res) => {
+  res.cookie('AuthToken', null, { maxAge: 0, httpOnly: true });
+  return res.status(204).send('ok');
 })
 
 router.patch('/pwd', isLoggedIn, async (req, res, next) => {

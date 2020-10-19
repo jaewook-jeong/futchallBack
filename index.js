@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const path = require('path');
 
-const passportConfig = require('./passport');
+const passportConfig = require('./passport/local');
 const db = require('./models');
 const userAPIRouter = require('./routes/user');
 const postAPIRouter = require('./routes/post');
@@ -25,22 +25,22 @@ db.sequelize.sync()
   })
   .catch(console.error);
 
-passportConfig();
-app.use(morgan('dev'));
-app.use(cors({
+  app.use(morgan('dev'));
+  app.use(cors({
     origin: true,
     credentials: true,
-})); 
-app.use('/', express.static(path.join(__dirname, 'uploads')));
-app.use(express.json()); // json형태의 data를 req.body!
-app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(expressSession({
-  saveUninitialized: false,
-  resave: false,
-  secret: process.env.COOKIE_SECRET,
-}));
+  })); 
+  app.use('/', express.static(path.join(__dirname, 'uploads')));
+  app.use(express.json()); // json형태의 data를 req.body!
+  app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
+  app.use(cookieParser(process.env.COOKIE_SECRET));
+// app.use(expressSession({
+//   saveUninitialized: false,
+//   resave: false,
+//   secret: process.env.COOKIE_SECRET,
+// }));
 app.use(passport.initialize());
+passportConfig();
 // app.use(passport.session());
 
 app.use('/user', userAPIRouter);
