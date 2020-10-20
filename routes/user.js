@@ -25,6 +25,15 @@ router.get('/', (req, res, next) => {
           console.error(err);
           next(err);
         }
+        if(Date.now() / 1000 - decoded.iat > 60 * 60 * 24) {
+          // 하루가 지나면 갱신해준다.
+          const { id, nickname } = decoded;
+          const freshToken = jwt.sign({ id, nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
+          res.cookie('AuthToken', freshToken, {
+              maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
+              httpOnly: true
+          });
+        }
         const fullUserWithoutPwd = await db.User.findOne({
           where: { id : decoded.id },
           attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
@@ -37,7 +46,7 @@ router.get('/', (req, res, next) => {
           }, {
             model: db.Image,
           }]
-        })
+        });
         res.status(200).json(fullUserWithoutPwd);
       });
     } else {
@@ -49,7 +58,7 @@ router.get('/', (req, res, next) => {
   }
 })
 
-router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
+router.patch('/joinmanage', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.');
@@ -77,7 +86,7 @@ router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/login', (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
       console.error(err);
@@ -106,7 +115,7 @@ router.post('/login', (req, res, next) => {
       });
       const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: req.body.remember === 'Y' ? '30d' : '1d' });
       res.cookie('AuthToken', token, { httpOnly: true, maxAge: req.body.remember ? 60 * 60 * 24 * 30 * 1000 : 60 * 60 * 24 * 1000 });
-      res.status(200).json(fullUserWithoutPwd);
+      return res.status(200).json(fullUserWithoutPwd);
     });
   })(req, res, next);
 });

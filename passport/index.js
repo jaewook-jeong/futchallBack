@@ -1,32 +1,53 @@
 const passport = require('passport');
-const db = require('../models');
-const local = require('./local');
+const passportJWT = require('passport-jwt');
+const JWTStrategy   = passportJWT.Strategy;
+
+const { Strategy: LocalStrategy } = require('passport-local');
+const bcrypt = require('bcrypt');
+const { User } = require('../models');
+require('dotenv').config();
 
 module.exports = () => {
-  passport.serializeUser((user, done) => { // 서버쪽에 [{ id: 3, cookie: 'asdfgh' }]
-    return done(null, user.id); //user정보중 쿠키와 묶을 ID값 저장
-  });
-
-  passport.deserializeUser(async (id, done) => {
+  passport.use(new LocalStrategy({
+    usernameField: 'originalId',
+    passwordField: 'password',
+  }, async (originalId, password, done) => {
     try {
-      console.log(id);
-      const user = await db.User.findOne({
-        where: { id }
-      });
-      return done(null, user); // req.user에 넣어준다
+      const user = await User.findOne({ where: { originalId } });
+      if (!user) {
+        return done(null, false, { reason: '존재하지 않는 사용자입니다!' });
+      }
+      const result = await bcrypt.compare(password, user.password);
+      if (result) {
+        return done(null, user);
+      }
+      return done(null, false, { reason: '비밀번호가 틀렸습니다.' });
     } catch (e) {
       console.error(e);
       return done(e);
     }
-  });
+  }));
 
-    local();
+  passport.use(new JWTStrategy({
+    jwtFromRequest: (req) => {
+      let token = null;
+      if (req && req.cookies) {
+          token = req.cookies['AuthToken'];
+      }
+      return token;
+    },
+    secretOrKey   : process.env.JWT_SECRET
+  }, async (jwtPayload, done) => {
+    try {
+      const user = await User.findOne({ where: { id: jwtPayload.id } });
+      if (!user) {
+        return done(null, false, { reason: '존재하지 않는 사용자입니다!' });
+      }
+      return done(null, user);
+    } catch (e) {
+      console.error(e);
+      return done(e);
+    }
+  }
+  ))
 };
-
-// 프론트에서 서버로는 cookie만 보내요(asdfgh)
-// 서버가 쿠키파서, 익스프레스 세션으로 쿠키 검사 후 id: 3 발견
-// id: 3이 deserializeUser에 들어감
-// req.user로 사용자 정보가 들어감
-
-// 요청 보낼때마다 deserializeUser가 실행됨(db 요청 1번씩 실행)
-// 실무에서는 deserializeUser 결과물 캐싱

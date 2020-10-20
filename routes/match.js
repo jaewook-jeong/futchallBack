@@ -1,5 +1,5 @@
 const express = require('express');
-const { Match, Stadium, Team } = require('../models');
+const { Match, Stadium, Team, Post } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const { Op } = require('sequelize');
 const moment = require('moment');
@@ -192,16 +192,18 @@ router.patch('/:matchId/approve', isLoggedIn, async (req, res, next) => {
     }
     match.confirm = 'Y';
     await match.save();
-    // 점령 신청한 모든 게임 취소하기
-    await Match.update({
-      confirm: 'N',
-    },{
-      where: {
-        StadiumId: match.StadiumId,
-        capture: 'Y',
-        confirm: null,
-      }
-    });
+    if (match.capture === 'Y') {
+      // 점령 신청한 모든 게임 취소하기
+      await Match.update({
+        confirm: 'N',
+      },{
+        where: {
+          StadiumId: match.StadiumId,
+          capture: 'Y',
+          confirm: null,
+        }
+      });
+    }
     res.status(200).json(match);
   } catch (error) {
     console.error(error);

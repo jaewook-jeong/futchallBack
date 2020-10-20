@@ -1,8 +1,9 @@
 const multer = require('multer');
 const path =require('path');
+require('dotenv').config();
 
 exports.isLoggedIn = (req, res, next) => {
-  if (req.isAuthenticated()) {
+  if (req.user) {
     next();
   } else {
     res.status(401).send('로그인이 필요합니다.');
@@ -10,7 +11,7 @@ exports.isLoggedIn = (req, res, next) => {
 };
 
 exports.isNotLoggedIn = (req, res, next) => {
-  if (!req.isAuthenticated()) {
+  if (!req.user) {
     next();
   } else {
     res.status(401).send('로그인 하지 않은 상태여야합니다!');
