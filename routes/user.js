@@ -15,7 +15,7 @@ router.post('/image', isNotLoggedIn, upload.single('image'), async (req, res, ne
   res.json(req.file.filename);
 })
 
-router.patch('/joinmanage', async (req, res, next) => {
+router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.');
@@ -145,7 +145,7 @@ router.post('/isTaken', async (req, res, next) => {
   }
 });
 
-router.post('/logout', async (req, res) => {
+router.post('/logout', isLoggedIn, async (req, res) => {
   res.cookie('AuthToken', null, { maxAge: 0, httpOnly: true });
   return res.status(204).send('ok');
 })

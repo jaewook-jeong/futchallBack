@@ -3,10 +3,11 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
 const db = require('../models');
+const { isNotLoggedIn } = require('./middlewares');
 
 const router = express.Router();
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', isNotLoggedIn, async (req, res, next) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
       console.error(err);
