@@ -15,6 +15,7 @@ const teamAPIRouter = require('./routes/team');
 const stadiumAPIRouter = require('./routes/stadium');
 const stadiaAPIRouter = require('./routes/stadia');
 const matchAPIRouter = require('./routes/match');
+const authAPIRouter = require('./routes/auth');
 
 dotenv.config();
 passportConfig();
@@ -36,6 +37,7 @@ app.use(express.urlencoded({ extended: true })); // form submit시 req.body처�
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(passport.initialize());
 
+app.use('/auth', authAPIRouter);
 app.use('/user', passport.authenticate('jwt', { session: false }), userAPIRouter);
 app.use('/post', passport.authenticate('jwt', { session: false }), postAPIRouter);
 app.use('/posts', postsAPIRouter);
