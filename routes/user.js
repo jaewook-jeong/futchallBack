@@ -4,18 +4,17 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
 const db = require('../models');
-const { isLoggedIn, isNotLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
 require('dotenv').config();
 
 
-router.post('/image', isNotLoggedIn, upload.single('image'), async (req, res, next) => {
+router.post('/image', upload.single('image'), async (req, res, next) => {
   console.log(req.file);
   res.json(req.file.filename);
 })
 
-router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
+router.patch('/joinmanage', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.');
@@ -43,7 +42,7 @@ router.patch('/joinmanage', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/join', isLoggedIn, async (req, res, next) => {
+router.patch('/join', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
       const team = await db.Team.findOne({
         where: {
@@ -68,7 +67,7 @@ router.patch('/join', isLoggedIn, async (req, res, next) => {
     }
 });
 
-router.post('/signup', isNotLoggedIn, async (req, res, next) => {
+router.post('/signup', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const taken = await db.User.findOne({
       where: {
@@ -118,14 +117,14 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
             attributes: ['id', 'src'],
           }]
         });
-        const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 1000 });
+        const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '3d' });
+        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 1000 * 3 });
         return res.status(200).json(fullUserWithoutPwd);
       });
     })(req, res, next);
   } catch (error) {
     console.error(error);
-    next(error); //status 500 server error
+    next(error);
   }
 });
 
@@ -137,20 +136,19 @@ router.post('/isTaken', async (req, res, next) => {
         originalId: req.body.originalId,
       }
     });
-    // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000/signup');
     res.status(200).send(taken);
   } catch (error) {
     console.error(error);
-    next(error); //status 500 server error
+    next(error);
   }
 });
 
-router.post('/logout', isLoggedIn, async (req, res) => {
+router.post('/logout', passport.authenticate('jwt', { session: false }), async (req, res) => {
   res.cookie('AuthToken', null, { maxAge: 0, httpOnly: true });
   return res.status(204).send('ok');
 })
 
-router.patch('/pwd', isLoggedIn, async (req, res, next) => {
+router.patch('/pwd', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const findUser = await db.User.findOne({
       where: req.user.id,
@@ -175,7 +173,7 @@ router.patch('/pwd', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/modify', isLoggedIn, async (req, res, next) => {
+router.patch('/modify', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const findUser = await db.User.findOne({ 
       where: req.user.id,

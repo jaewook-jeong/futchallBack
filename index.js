@@ -29,26 +29,20 @@ db.sequelize.sync()
 app.use(morgan('dev'));
 app.use(cors({
   origin: true,
-  credentials: true,
 })); 
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
 app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(passport.initialize());
 
 app.use('/auth', authAPIRouter);
-app.use('/user', passport.authenticate('jwt', { session: false }), userAPIRouter);
-app.use('/post', passport.authenticate('jwt', { session: false }), postAPIRouter);
+app.use('/user', userAPIRouter);
+app.use('/post', postAPIRouter);
 app.use('/posts', postsAPIRouter);
-app.use('/team', passport.authenticate('jwt', { session: false }), teamAPIRouter);
-app.use('/stadium', passport.authenticate('jwt', { session: false }), stadiumAPIRouter);
-app.use('/stadia', passport.authenticate('jwt', { session: false }), stadiaAPIRouter);
+app.use('/team', teamAPIRouter);
+app.use('/stadium', stadiumAPIRouter);
+app.use('/stadia', stadiaAPIRouter);
 app.use('/match', passport.authenticate('jwt', { session: false }), matchAPIRouter);
-
-// app.use((err, req, res, next) => {
-// // 에러처리 미들웨어 custom 가능, 여기부분에서!
-// });
 
 app.listen(3065, () => {
     console.log('server is running on http://localhost:3065');

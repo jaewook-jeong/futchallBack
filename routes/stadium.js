@@ -1,18 +1,19 @@
 const express = require('express');
 const moment = require('moment');
 const { Op, Sequelize } = require('sequelize');
+const passport = require('passport');
 
 const { Stadium, Image, Match, Team, User, Post } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
 
-router.post('/image', isLoggedIn, upload.single('image'), async (req, res, next) => {
+router.post('/image', passport.authenticate('jwt', { session: false }), upload.single('image'), async (req, res, next) => {
   console.log(req.file);
   res.json(req.file.filename);
 })
 
-router.post('/register', isLoggedIn, async (req, res, next) => {
+router.post('/register', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const taken = await Stadium.findOne({
       where: {
@@ -48,7 +49,7 @@ router.post('/register', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/search', isLoggedIn, async (req, res, next) => {
+router.get('/search', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const searchList = await Stadium.findAll({
       where: {
@@ -66,7 +67,7 @@ router.get('/search', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/istaken', isLoggedIn, async (req, res, next) => {
+router.get('/istaken', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     
     const stadia = await Stadium.findAll({
@@ -108,7 +109,7 @@ router.get('/istaken', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/:stadiumId/take', isLoggedIn, async (req, res, next) => {
+router.post('/:stadiumId/take', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
     const isInTeam = await User.findOne({
       where: { id : req.user.id },
@@ -224,7 +225,6 @@ router.get('/:stadiumId', async (req, res, next) => {
       // console.log(now.diff(moment('2020-09-15 14:00:00', 'YYYY-MM-DD HH:00:00').format(), 'hours'));
       // console.log(now.diff(moment('2020-09-15 15:00:00', 'YYYY-MM-DD HH:00:00').format(), 'days'));
       // console.log(now.diff(moment('2020-09-15 15:00:00', 'YYYY-MM-DD HH:00:00').format(), 'hours'));
-      console.log("들어옴!");
       stadium.valid = null;
       stadium.TeamId = null;
       await stadium.save();

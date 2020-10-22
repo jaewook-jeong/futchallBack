@@ -41,46 +41,36 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
   })(req, res, next);
 });
 
-router.get('/myinfo', (req, res, next) => {
+router.get('/myinfo', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   try {
-    const token = req.cookies['AuthToken'];
-    if (token){
-      jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-        if (err) {
-          console.error(err);
-          next(err);
-        }
-        if(Date.now() / 1000 - decoded.iat > 60 * 60 * 24) {
-          // 하루가 지나면 갱신해준다.
-          const { id, nickname } = decoded;
-          const freshToken = jwt.sign({ id, nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
-          res.cookie('AuthToken', freshToken, {
-              maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-              httpOnly: true
-          });
-        }
-        const fullUserWithoutPwd = await db.User.findOne({
-          where: { id : decoded.id },
-          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
-          include: [{
-            model: db.Team,
-            attributes: ['id', 'title'],
-          }, {
-            model: db.Post,
-            attributes: ['id'],
-          }, {
-            model: db.Image,
-          }]
-        });
-        res.status(200).json(fullUserWithoutPwd);
-      });
-    } else {
-      res.status(200).json(null);
-    }
+    const fullUserWithoutPwd = await db.User.findOne({
+      where: { id : req.user.id },
+      attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
+      include: [{
+        model: db.Team,
+        attributes: ['id', 'title'],
+      }, {
+        model: db.Post,
+        attributes: ['id'],
+      }, {
+        model: db.Image,
+      }]
+    });
+    res.status(200).json(fullUserWithoutPwd);
   } catch (error) {
     console.error(error);
     next(error);
   }
-})
+});
+
+router.post('/token/refresh', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+  const { id, nickname } = req.user;
+  const freshToken = jwt.sign({ id, nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.cookie('AuthToken', freshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true
+  });
+  res.status(201).send('token refreshed');
+});
 
 module.exports = router;

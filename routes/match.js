@@ -1,11 +1,10 @@
 const express = require('express');
-const { Match, Stadium, Team, Post } = require('../models');
-const { isLoggedIn } = require('./middlewares');
+const { Match, Stadium, Team } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 const router = express.Router();
 
-router.get('/team/:teamId', isLoggedIn, async (req, res, next) => {
+router.get('/team/:teamId', async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
       return res.status(403).send('접근권한이 없습니다!');
@@ -51,7 +50,7 @@ router.get('/team/:teamId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/reservation', isLoggedIn, async (req, res, next) => {
+router.post('/reservation', async (req, res, next) => {
   try {
     const match = await Match.create({
       date: req.body.date,
@@ -67,7 +66,7 @@ router.post('/reservation', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/capture', isLoggedIn, async (req, res, next) => {
+router.post('/capture', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다!');
@@ -86,7 +85,7 @@ router.post('/capture', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/:matchId/winner/:teamId', isLoggedIn, async (req, res, next) => {
+router.patch('/:matchId/winner/:teamId', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.')
@@ -131,7 +130,7 @@ router.patch('/:matchId/winner/:teamId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/:matchId/loser/:teamId', isLoggedIn, async (req, res, next) => {
+router.patch('/:matchId/loser/:teamId', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.')
@@ -176,7 +175,7 @@ router.patch('/:matchId/loser/:teamId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/:matchId/approve', isLoggedIn, async (req, res, next) => {
+router.patch('/:matchId/approve', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.')
@@ -211,7 +210,7 @@ router.patch('/:matchId/approve', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch('/:matchId/cancel', isLoggedIn, async (req, res, next) => {
+router.patch('/:matchId/cancel', async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.')
@@ -235,7 +234,7 @@ router.patch('/:matchId/cancel', isLoggedIn, async (req, res, next) => {
 });
 
 
-router.patch('/:matchId/timeout', isLoggedIn, async (req, res, next) => {
+router.patch('/:matchId/timeout', async (req, res, next) => {
   try {
     if (!req.user.LeaderId){
       return res.status(403).send("권한이 없습니다!");
