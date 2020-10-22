@@ -1,6 +1,7 @@
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const JWTStrategy   = passportJWT.Strategy;
+const ExtractJwt = passportJWT.ExtractJwt;
 
 const { Strategy: LocalStrategy } = require('passport-local');
 const bcrypt = require('bcrypt');
@@ -29,19 +30,13 @@ module.exports = () => {
   }));
 
   passport.use(new JWTStrategy({
-    jwtFromRequest: (req) => {
-      let token = null;
-      if (req && req.cookies) {
-          token = req.cookies['AuthToken'];
-      }
-      return token;
-    },
-    secretOrKey   : process.env.JWT_SECRET
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
+    secretOrKey   : process.env.JWT_SECRET,
   }, async (jwtPayload, done) => {
     try {
       const user = await User.findOne({ where: { id: jwtPayload.id } });
       if (!user) {
-        return done(null, false, { reason: '존재하지 않는 사용자입니다!' });
+        return done(null, null);
       }
       return done(null, user);
     } catch (e) {
