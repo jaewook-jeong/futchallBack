@@ -29,6 +29,7 @@ db.sequelize.sync()
 app.use(morgan('dev'));
 app.use(cors({
   origin: true,
+  credentials: true,
 })); 
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
