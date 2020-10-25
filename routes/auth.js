@@ -34,8 +34,8 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
           model: db.Image,
         }]
       });
-      const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: req.body.remember === 'Y' ? '30d' : '1d' });
-      res.cookie('AuthToken', token, { httpOnly: true, maxAge: req.body.remember ? 60 * 60 * 24 * 30 * 1000 : 60 * 60 * 24 * 1000 });
+      const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: req.body.remember ? '30d' : '1d' });
+      res.cookie('AuthToken', token, { httpOnly: true, maxAge: req.body.remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24 });
       return res.status(200).json(fullUserWithoutPwd);
     });
   })(req, res, next);
@@ -63,14 +63,27 @@ router.get('/myinfo', passport.authenticate('jwt', { session: false }), async (r
   }
 });
 
-router.post('/token/refresh', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/token/refresh', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
   const { id, nickname } = req.user;
   const freshToken = jwt.sign({ id, nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.cookie('AuthToken', freshToken, {
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true
   });
-  res.status(201).send('token refreshed');
+  const fullUserWithoutPwd = await db.User.findOne({
+    where: { id },
+    attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
+    include: [{
+      model: db.Team,
+      attributes: ['id', 'title'],
+    }, {
+      model: db.Post,
+      attributes: ['id'],
+    }, {
+      model: db.Image,
+    }]
+  });
+  res.status(201).json({ token: freshToken, me: fullUserWithoutPwd});
 });
 
 module.exports = router;
