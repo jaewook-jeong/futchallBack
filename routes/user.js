@@ -4,6 +4,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
 const db = require('../models');
+const { upload } = require('./middlewares');
 
 const router = express.Router();
 require('dotenv').config();
@@ -118,7 +119,7 @@ router.post('/signup', passport.authenticate('jwt', { session: false }), async (
           }]
         });
         const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '3d' });
-        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 1000 * 3 });
+        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 3 });
         return res.status(200).json(fullUserWithoutPwd);
       });
     })(req, res, next);
@@ -130,7 +131,6 @@ router.post('/signup', passport.authenticate('jwt', { session: false }), async (
 
 router.post('/isTaken', async (req, res, next) => {
   try {
-    console.log(req.body);
     const taken = await db.User.findOne({
       where: {
         originalId: req.body.originalId,
