@@ -30,7 +30,7 @@ app.use(morgan('dev'));
 app.use(cors({
   origin: true,
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Origin', 'Accept', 'Content-Type', 'Authorization']
 })); 
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
