@@ -18,6 +18,14 @@ exports.isNotLoggedIn = (req, res, next) => {
   }
 };
 
+exports.refererCheck = (req, res, next) => {
+  if (req.headers.referer === 'http://localhost:3000/'){
+    next();
+  } else {
+    res.status(403).send('Referer Error');
+  }
+}
+
 exports.upload = multer({
   storage: multer.diskStorage({
     destination(req, file, done) {

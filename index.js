@@ -16,6 +16,7 @@ const stadiumAPIRouter = require('./routes/stadium');
 const stadiaAPIRouter = require('./routes/stadia');
 const matchAPIRouter = require('./routes/match');
 const authAPIRouter = require('./routes/auth');
+const { refererCheck } = require('./routes/middlewares');
 
 dotenv.config();
 passportConfig();
@@ -37,6 +38,7 @@ app.use(express.json()); // json형태의 data를 req.body!
 app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
+app.use(refererCheck);
 app.use('/auth', authAPIRouter);
 app.use('/user', userAPIRouter);
 app.use('/post', postAPIRouter);
