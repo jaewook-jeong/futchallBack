@@ -29,14 +29,14 @@ module.exports = () => {
     }
   }));
 
-  passport.use(new JWTStrategy({
+  passport.use('refresh-jwt', new JWTStrategy({
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
     secretOrKey   : process.env.JWT_SECRET,
   }, async (jwtPayload, done) => {
     try {
       const user = await User.findOne({ where: { id: jwtPayload.id } });
       if (!user) {
-        return done(null, null);
+        return done("존재하지 않는 사용자입니다.", null);
       }
       return done(null, user);
     } catch (e) {
@@ -44,5 +44,22 @@ module.exports = () => {
       return done(e);
     }
   }
-  ))
+  ));
+
+  passport.use('access-jwt', new JWTStrategy({
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
+    secretOrKey   : process.env.JWT_SECRET,
+  }, async (jwtPayload, done) => {
+    try {
+      const user = await User.findOne({ where: { originalId: jwtPayload.originalId } });
+      if (!user) {
+        return done("CSRF Attack", null);
+      }
+      return done(null, user);
+    } catch (e) {
+      console.error(e);
+      return done(e);
+    }
+  }
+  ));
 };
