@@ -9,12 +9,12 @@ const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
 
-router.post('/image', passport.authenticate('jwt', { session: false }), upload.single('image'), async (req, res, next) => {
+router.post('/image', passport.authenticate('access-jwt', { session: false }), upload.single('image'), async (req, res, next) => {
   console.log(req.file);
   res.json(req.file.filename);
 })
 
-router.post('/register', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/register', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const team = await Team.create({
       title: req.body.title,
@@ -82,7 +82,7 @@ router.post('/search', async (req, res, next) => {
   }
 });
 
-router.get('/search', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/search', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const searchList = await Team.findAll({
       where: {
@@ -130,7 +130,7 @@ router.get('/autocomplete', async (req, res, next) => {
   }
 });
 
-router.post('/calendar', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/calendar', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     await Calendar.destroy({
       where: {
@@ -175,7 +175,7 @@ router.post('/calendar', passport.authenticate('jwt', { session: false }), async
   }
 });
 
-router.get('/:teamId/joinlist', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/:teamId/joinlist', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
       return res.status(403).send('접근권한이 없습니다!');
@@ -193,7 +193,7 @@ router.get('/:teamId/joinlist', passport.authenticate('jwt', { session: false })
   }
 });
 
-router.post('/:teamId/calendar', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/:teamId/calendar', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     if (parseInt(req.params.teamId, 10) !== req.user.TeamId) {
       return res.status(403).send('해당 정보에 접근할 권한이 없습니다.');
@@ -286,7 +286,7 @@ router.get('/:teamId/:tabId', async (req, res, next) => {
   }
 });
 
-router.patch('/:teamId', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.patch('/:teamId', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     if (req.user.LeaderId !== parseInt(req.params.teamId, 10)) {
       return res.status(403).send('권한이 없습니다.');
@@ -320,6 +320,9 @@ router.patch('/:teamId', passport.authenticate('jwt', { session: false }), async
 
 router.get('/:teamId', async (req, res, next) => {
   try {
+    console.log('------------------------------------');
+    console.log(req.cookies, req.headers.cookie);
+    console.log('------------------------------------');
     const team = await Team.findOne({
       where: { id: req.params.teamId },
       include: [{

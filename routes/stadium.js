@@ -8,12 +8,12 @@ const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
 
-router.post('/image', passport.authenticate('jwt', { session: false }), upload.single('image'), async (req, res, next) => {
+router.post('/image', passport.authenticate('access-jwt', { session: false }), upload.single('image'), async (req, res, next) => {
   console.log(req.file);
   res.json(req.file.filename);
 })
 
-router.post('/register', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/register', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const taken = await Stadium.findOne({
       where: {
@@ -49,7 +49,7 @@ router.post('/register', passport.authenticate('jwt', { session: false }), async
   }
 });
 
-router.get('/search', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/search', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const searchList = await Stadium.findAll({
       where: {
@@ -67,7 +67,7 @@ router.get('/search', passport.authenticate('jwt', { session: false }), async (r
   }
 });
 
-router.get('/istaken', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/istaken', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     
     const stadia = await Stadium.findAll({
@@ -109,7 +109,7 @@ router.get('/istaken', passport.authenticate('jwt', { session: false }), async (
   }
 });
 
-router.post('/:stadiumId/take', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/:stadiumId/take', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const isInTeam = await User.findOne({
       where: { id : req.user.id },

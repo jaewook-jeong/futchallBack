@@ -13,7 +13,7 @@ try {
   fs.mkdirSync('uploads');
 }
 
-router.post('/images', passport.authenticate('jwt', { session: false }),  upload.array('image'), async (req, res, next) => {
+router.post('/images', passport.authenticate('access-jwt', { session: false }),  upload.array('image'), async (req, res, next) => {
   console.log(req.files);
   res.json(req.files.map((v) => v.filename));
 });
@@ -82,7 +82,7 @@ router.post('/images', passport.authenticate('jwt', { session: false }),  upload
 //   }
 // });
 
-router.post('/team', passport.authenticate('jwt', { session: false }), upload.none(), async (req, res, next) => {
+router.post('/team', passport.authenticate('access-jwt', { session: false }), upload.none(), async (req, res, next) => {
   try {
     const post = await Post.create({
       content: req.body.content,
@@ -121,7 +121,7 @@ router.post('/team', passport.authenticate('jwt', { session: false }), upload.no
   }
 });
 
-router.post('/stadium', passport.authenticate('jwt', { session: false }), upload.none(), async (req, res, next) => {
+router.post('/stadium', passport.authenticate('access-jwt', { session: false }), upload.none(), async (req, res, next) => {
   try {
     const post = await Post.create({
       content: req.body.content,
@@ -160,7 +160,7 @@ router.post('/stadium', passport.authenticate('jwt', { session: false }), upload
   }
 });
 
-router.post('/:postId/comment', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/:postId/comment', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const post = await Post.findOne({
       where: {
@@ -246,7 +246,7 @@ router.get('/:postId', async (req, res, next) => {
   }
 });
 
-router.delete('/:postId', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.delete('/:postId', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     await Post.destroy({
       where: {

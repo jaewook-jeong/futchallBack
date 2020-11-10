@@ -15,7 +15,7 @@ router.post('/image', upload.single('image'), async (req, res, next) => {
   res.json(req.file.filename);
 })
 
-router.patch('/joinmanage', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.patch('/joinmanage', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     if (!req.user.LeaderId) {
       return res.status(403).send('권한이 없습니다.');
@@ -43,7 +43,7 @@ router.patch('/joinmanage', passport.authenticate('jwt', { session: false }), as
   }
 });
 
-router.patch('/join', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.patch('/join', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
     try {
       const team = await db.Team.findOne({
         where: {
@@ -68,7 +68,7 @@ router.patch('/join', passport.authenticate('jwt', { session: false }), async (r
     }
 });
 
-router.post('/signup', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/signup', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const taken = await db.User.findOne({
       where: {
@@ -105,22 +105,14 @@ router.post('/signup', passport.authenticate('jwt', { session: false }), async (
           return next(loginErr);
         }
         const fullUserWithoutPwd = await db.User.findOne({
-          where: { originalId : user.originalId },
-          attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
-          include: [{
-            model: db.Team,
-            attributes: ['id', 'title'],
-          }, {
-            model: db.Post,
-            attributes: ['id'],
-          }, {
-            model: db.Image,
-            attributes: ['id', 'src'],
-          }]
+          where: { id : user.id },
+          attributes: ['id', 'nickname','originalId'],
         });
-        const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '3d' });
-        res.cookie('AuthToken', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 3 });
-        return res.status(200).json(fullUserWithoutPwd);
+        const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        fullUserWithoutPwd.token = refreshToken;
+        await fullUserWithoutPwd.save();
+        res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: req.body.remember ? 1000 * 60 * 60 * 24 * 14 : 60 * 60 * 24 * 1000 });
+        return res.status(200).send('회원가입을 축하합니다!');
       });
     })(req, res, next);
   } catch (error) {
@@ -143,12 +135,13 @@ router.post('/isTaken', async (req, res, next) => {
   }
 });
 
-router.post('/logout', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  res.cookie('AuthToken', null, { maxAge: 0, httpOnly: true });
+router.post('/logout', passport.authenticate('access-jwt', { session: false }), async (req, res) => {
+  res.cookie('RefreshToken', null, { maxAge: 0, httpOnly: true });
+  await db.User.update({ token: null }, { where: { id: req.user.id } })
   return res.status(204).send('ok');
 })
 
-router.patch('/pwd', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.patch('/pwd', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const findUser = await db.User.findOne({
       where: req.user.id,
@@ -173,7 +166,7 @@ router.patch('/pwd', passport.authenticate('jwt', { session: false }), async (re
   }
 });
 
-router.patch('/modify', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.patch('/modify', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const findUser = await db.User.findOne({ 
       where: req.user.id,
