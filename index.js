@@ -38,15 +38,14 @@ app.use(express.json()); // json형태의 data를 req.body!
 app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
-app.use(refererCheck);
-app.use('/auth', authAPIRouter);
-app.use('/user', userAPIRouter);
-app.use('/post', postAPIRouter);
+app.use('/auth', refererCheck, authAPIRouter);
+app.use('/user', refererCheck, userAPIRouter);
+app.use('/post', refererCheck, postAPIRouter);
 app.use('/posts', postsAPIRouter);
-app.use('/team', teamAPIRouter);
-app.use('/stadium', stadiumAPIRouter);
-app.use('/stadia', stadiaAPIRouter);
-app.use('/match', passport.authenticate('jwt', { session: false }), matchAPIRouter);
+app.use('/team', refererCheck, teamAPIRouter);
+app.use('/stadium', refererCheck, stadiumAPIRouter);
+app.use('/stadia', refererCheck, stadiaAPIRouter);
+app.use('/match', refererCheck, passport.authenticate('access-jwt', { session: false }), matchAPIRouter);
 
 app.listen(3065, () => {
     console.log('server is running on http://localhost:3065');

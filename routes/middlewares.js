@@ -19,7 +19,7 @@ exports.isNotLoggedIn = (req, res, next) => {
 };
 
 exports.refererCheck = (req, res, next) => {
-  if (req.headers.referer === 'http://localhost:3000/'){
+  if (req.headers.referer === 'http://localhost:3000/' || req.headers.referer === undefined){
     next();
   } else {
     res.status(403).send('Referer Error');
