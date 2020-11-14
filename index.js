@@ -5,6 +5,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const path = require('path');
+const hpp = require('hpp');
+const helmet = require('helmet');
 
 const passportConfig = require('./passport');
 const db = require('./models');
@@ -17,7 +19,6 @@ const stadiaAPIRouter = require('./routes/stadia');
 const matchAPIRouter = require('./routes/match');
 const authAPIRouter = require('./routes/auth');
 const { refererCheck } = require('./routes/middlewares');
-
 dotenv.config();
 passportConfig();
 const app = express();
@@ -27,9 +28,15 @@ db.sequelize.sync()
   })
   .catch(console.error);
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined'));
+  app.use(hpp());
+  app.use(helmet());
+} else {
+  app.use(morgan('dev'));
+}
 app.use(cors({
-  origin: true,
+  origin: ['http:/localhost:3000', 'futchall.com'],
   credentials: true,
   allowedHeaders: ['Origin', 'Accept', 'Content-Type', 'Authorization']
 })); 
