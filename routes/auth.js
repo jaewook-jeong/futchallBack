@@ -70,27 +70,26 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
   }
 });
 
-// router.get('/token/refresh', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
-//   const { id, nickname } = req.user;
-//   const freshToken = jwt.sign({ id, nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
-//   res.cookie('RefreshToken', freshToken, {
-//       maxAge: 1000 * 60 * 60 * 24 * 7,
-//       httpOnly: true
-//   });
-//   const fullUserWithoutPwd = await db.User.findOne({
-//     where: { id },
-//     attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId'],
-//     include: [{
-//       model: db.Team,
-//       attributes: ['id', 'title'],
-//     }, {
-//       model: db.Post,
-//       attributes: ['id'],
-//     }, {
-//       model: db.Image,
-//     }]
-//   });
-//   res.status(201).json({ token: freshToken, me: fullUserWithoutPwd});
-// });
+router.get('/token/expired', passport.authenticate('refresh-jwt', { session: false }), async (req, res, next) => {
+  const { id, originalId } = req.user;
+  const accessToken = jwt.sign({ id, originalId }, process.env.JWT_SECRET, { expiresIn: '30m' });
+  const fullUserWithoutPwd = await db.User.findOne({
+    where: { id },
+    attributes: ['id', 'nickname','originalId', 'positions', 'age', 'locations', 'LeaderId', 'TeamId', 'JoinInId', 'token'],
+    include: [{
+      model: db.Team,
+      attributes: ['id', 'title'],
+    }, {
+      model: db.Post,
+      attributes: ['id'],
+    }, {
+      model: db.Image,
+    }]
+  });
+  if (req.headers.authorization.slice(7) !== fullUserWithoutPwd.token) {
+    return res.status(403).send("CSRF Attacked");
+  }
+  res.status(201).json({ token: accessToken, me: fullUserWithoutPwd});
+});
 
 module.exports = router;
