@@ -54,6 +54,6 @@ app.use('/stadium', refererCheck, stadiumAPIRouter);
 app.use('/stadia', refererCheck, stadiaAPIRouter);
 app.use('/match', refererCheck, passport.authenticate('access-jwt', { session: false }), matchAPIRouter);
 
-app.listen(3065, () => {
-    console.log('server is running on http://localhost:3065');
+app.listen(80, () => {
+    console.log('server is running on port 80');
 });
