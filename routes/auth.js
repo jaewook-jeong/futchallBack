@@ -38,7 +38,7 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
       fullUserWithoutPwd.token = refreshToken;
       await fullUserWithoutPwd.save();
       const accessToken = jwt.sign({ id: user.id, originalId: fullUserWithoutPwd.originalId }, process.env.JWT_SECRET, { expiresIn: '30m' });
-      res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: req.body.remember ? 1000 * 60 * 60 * 24 * 14 : 60 * 60 * 24 * 1000 });
+      res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: req.body.remember ? 1000 * 60 * 60 * 24 * 14 : 60 * 60 * 24 * 1000, sameSite: 'none' });
       return res.status(200).json({ me: fullUserWithoutPwd, token: accessToken });
     });
   })(req, res, next);
