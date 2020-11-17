@@ -68,7 +68,7 @@ router.patch('/join', passport.authenticate('access-jwt', { session: false }), a
     }
 });
 
-router.post('/signup', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
+router.post('/signup', async (req, res, next) => {
   try {
     const taken = await db.User.findOne({
       where: {
