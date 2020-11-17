@@ -19,6 +19,9 @@ exports.isNotLoggedIn = (req, res, next) => {
 };
 
 exports.refererCheck = (req, res, next) => {
+  console.log('------------------------------------');
+  console.log(req.headers.referer);
+  console.log('------------------------------------');
   if (req.headers.referer === 'http://54.180.102.143' || req.headers.referer === undefined){
     next();
   } else {
