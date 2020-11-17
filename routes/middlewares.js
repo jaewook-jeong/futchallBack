@@ -22,7 +22,7 @@ exports.refererCheck = (req, res, next) => {
   console.log('------------------------------------');
   console.log(req.headers.referer);
   console.log('------------------------------------');
-  if (req.headers.referer === 'http://54.180.102.143' || req.headers.referer === undefined){
+  if (req.headers.referer.toString.includes('http://54.180.102.143') || req.headers.referer === undefined){
     next();
   } else {
     res.status(403).send('Referer Error');
