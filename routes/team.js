@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post('/image', passport.authenticate('access-jwt', { session: false }), upload.single('image'), async (req, res, next) => {
   console.log(req.file);
-  res.json(req.file.filename);
+  res.json(req.file.location);
 })
 
 router.post('/register', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
