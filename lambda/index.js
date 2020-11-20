@@ -20,7 +20,7 @@ exports.handler = async (event, context, callback) => {
       Bucket,
       Key: `thumb/${filename}`,
       Body: resizedImage,
-    });
+    }).promise();
     return callback(null, `thumb/${filename}`);
   } catch (error) {
     console.error(error);
