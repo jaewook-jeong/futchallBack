@@ -25,7 +25,7 @@ exports.refererCheck = (req, res, next) => {
   console.log('------------------------------------');
   console.log(req.headers.referer);
   console.log('------------------------------------');
-  if (req.headers.referer === 'http://www.futchall.com/' || req.headers.referer === 'http://futchall.com/' || req.headers.referer === undefined){
+  if (req.headers.referer.includes('futchall.com') || req.headers.referer === undefined){
     next();
   } else {
     res.status(403).send('Referer Error');
