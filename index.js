@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use(cors({
   origin: ['http:/localhost:3000', 'https://futchall.com', 'https://www.futchall.com'],
   credentials: true,
-  allowedHeaders: ['Origin', 'Accept', 'Content-Type', 'Authorization']
 })); 
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
