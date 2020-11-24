@@ -34,6 +34,9 @@ module.exports = () => {
     secretOrKey   : process.env.JWT_SECRET,
   }, async (jwtPayload, done) => {
     try {
+      console.log('------------------------------------');
+      console.log(jwtPayload);
+      console.log('------------------------------------');
       const user = await User.findOne({ where: { id: jwtPayload.id } });
       if (!user) {
         return done("존재하지 않는 사용자입니다.", null);
