@@ -111,7 +111,7 @@ router.post('/signup', async (req, res, next) => {
         const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         fullUserWithoutPwd.token = refreshToken;
         await fullUserWithoutPwd.save();
-        res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 3 * 60 * 60 * 24 * 1000, domain: process.env.NODE_ENV === 'production' && '.futchall.com' });
+        res.cookie('RefreshToken', refreshToken, { httpOnly: true, maxAge: 3 * 60 * 60 * 24 * 1000, domain: process.env.NODE_ENV === 'production' && '.futchall.com', secure: true });
         return res.status(200).send('회원가입을 축하합니다!');
       });
     })(req, res, next);
@@ -136,7 +136,7 @@ router.post('/isTaken', async (req, res, next) => {
 });
 
 router.post('/logout', passport.authenticate('access-jwt', { session: false }), async (req, res) => {
-  res.cookie('RefreshToken', null, { maxAge: 0, httpOnly: true, domain: process.env.NODE_ENV === 'production' && '.futchall.com' });
+  res.cookie('RefreshToken', null, { maxAge: 0, httpOnly: true, domain: process.env.NODE_ENV === 'production' && '.futchall.com', secure: true });
   await db.User.update({ token: null }, { where: { id: req.user.id } })
   return res.status(204).send('ok');
 })

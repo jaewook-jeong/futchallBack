@@ -320,9 +320,6 @@ router.patch('/:teamId', passport.authenticate('access-jwt', { session: false })
 
 router.get('/:teamId', async (req, res, next) => {
   try {
-    console.log('------------------------------------');
-    console.log(req.cookies, req.headers.cookie);
-    console.log('------------------------------------');
     const team = await Team.findOne({
       where: { id: req.params.teamId },
       include: [{
