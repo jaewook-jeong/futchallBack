@@ -27,7 +27,7 @@ db.sequelize.sync()
     console.log("DB connected");
   })
   .catch(console.error);
-
+app.set('trust proxy', 1);
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
   app.use(hpp());
