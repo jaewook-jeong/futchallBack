@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(morgan('dev'));
 }
 app.use(cors({
-  origin: ['http:/localhost:3000', 'http://futchall.com'],
+  origin: ['http:/localhost:3000', 'https://futchall.com', 'https://www.futchall.com'],
   credentials: true,
   allowedHeaders: ['Origin', 'Accept', 'Content-Type', 'Authorization']
 })); 
