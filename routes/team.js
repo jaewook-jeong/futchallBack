@@ -38,15 +38,15 @@ router.post('/register', passport.authenticate('access-jwt', { session: false })
 
 router.post('/search', async (req, res, next) => {
   try {
-    const query1 = `SELECT stadia.id, stadia.title, stadia.address, stadia.description, images.src
-                    FROM stadia left outer join images on stadia.id = images.StadiumId
-                    WHERE REPLACE(stadia.title, ' ', '') like :query or REPLACE(stadia.description, ' ', '') like :query`;
-    const query2 = `SELECT posts.content, posts.id, users.nickname, posts.createdAt, images.src
-                    FROM posts left outer join users on posts.UserId = Users.id left outer join images on posts.id = images.PostId
-                    WHERE REPLACE(posts.content, ' ', '') like :query`;
-    const query3 = `SELECT teams.id, teams.title, teams.description, images.src, teams.location
-                    FROM teams left outer join images on teams.id = images.TeamId
-                    WHERE REPLACE(teams.description, ' ', '') like :query or REPLACE(teams.title, ' ', '') like :query`;
+    const query1 = `SELECT Stadia.id, Stadia.title, Stadia.address, Stadia.description, Images.src
+                    FROM Stadia left outer join Images on Stadia.id = Images.StadiumId
+                    WHERE REPLACE(Stadia.title, ' ', '') like :query or REPLACE(Stadia.description, ' ', '') like :query`;
+    const query2 = `SELECT Posts.content, Posts.id, Users.nickname, Posts.createdAt, Images.src
+                    FROM Posts left outer join Users on Posts.UserId = Users.id left outer join Images on Posts.id = Images.PostId
+                    WHERE REPLACE(Posts.content, ' ', '') like :query`;
+    const query3 = `SELECT Teams.id, Teams.title, Teams.description, Images.src, Teams.location
+                    FROM Teams left outer join Images on Teams.id = Images.TeamId
+                    WHERE REPLACE(Teams.description, ' ', '') like :query or REPLACE(Teams.title, ' ', '') like :query`;
 
     const stadiumList = await db.sequelize.query(
       query1,
