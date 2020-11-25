@@ -175,6 +175,22 @@ router.post('/calendar', passport.authenticate('access-jwt', { session: false })
   }
 });
 
+router.get('/rank', async (req, res, next) => {
+  try {
+    const Rank = await db.sequelize.query(
+      `SELECT * FROM Teams left outer join (select Stadia.TeamId, count(*) as occupation from Stadia where Stadia.TeamId is not null group by TeamId) as Cnt on Team.id = Cnt.TeamId order by Cnt.cnt desc`,
+      {
+        type: Sequelize.QueryTypes.SELECT,
+        raw: true
+      }
+    );
+    res.status(200).json(Rank);
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 router.get('/:teamId/joinlist', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     if (req.user.LeaderId != req.params.teamId) {
