@@ -178,7 +178,7 @@ router.post('/calendar', passport.authenticate('access-jwt', { session: false })
 router.get('/rank', async (req, res, next) => {
   try {
     const Rank = await db.sequelize.query(
-      `SELECT * FROM Teams left outer join (select Stadia.TeamId, count(*) as occupation from Stadia where Stadia.TeamId is not null group by TeamId) as Cnt on Team.id = Cnt.TeamId order by Cnt.cnt desc`,
+      `SELECT * FROM Teams left outer join (select Stadia.TeamId, count(*) as occupation from Stadia where Stadia.TeamId is not null group by TeamId) as Cnt on Team.id = Cnt.TeamId order by Cnt.cnt desc limit 10`,
       {
         type: Sequelize.QueryTypes.SELECT,
         raw: true
