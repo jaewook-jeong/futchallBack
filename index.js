@@ -37,7 +37,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(morgan('dev'));
 }
 app.use(cors({
-  origin: ['http:/localhost:3000', 'https://futchall.com', 'https://www.futchall.com'],
+  origin: ['http://localhost:3000', 'https://futchall.com', 'https://www.futchall.com'],
   credentials: true,
 })); 
 app.use('/', express.static(path.join(__dirname, 'uploads')));
