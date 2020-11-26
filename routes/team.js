@@ -369,10 +369,6 @@ router.get('/:teamId', async (req, res, next) => {
         attributes: ['lat', 'lng', 'id', 'title']
       }]
     });
-    console.log('------------------------------------');
-    console.log("WTF", req.params.teamId);
-    console.log(team);
-    console.log('------------------------------------');
     res.status(200).json(team);
   } catch (error) {
     console.error(error);
