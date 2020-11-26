@@ -178,13 +178,36 @@ router.post('/calendar', passport.authenticate('access-jwt', { session: false })
 router.get('/rank', async (req, res, next) => {
   try {
     const Rank = await db.sequelize.query(
-      `SELECT * FROM Teams left outer join (select Stadia.TeamId, count(*) as occupation from Stadia where Stadia.TeamId is not null group by TeamId) as Cnt on Team.id = Cnt.TeamId order by Cnt.cnt desc limit 10`,
+      `SELECT Teams.id, Teams.title, Teams.location, Teams.recruit, ifnull(cnt.occupation, 0) as occupation FROM Teams left outer join 
+      (select Stadia.TeamId, count(*) as occupation from Stadia where Stadia.TeamId is not null group by TeamId) as Cnt 
+      on Teams.id = Cnt.TeamId order by Cnt.occupation desc limit 10`,
       {
         type: Sequelize.QueryTypes.SELECT,
         raw: true
       }
     );
-    res.status(200).json(Rank);
+    if (Rank) {
+      let occ = Rank[0].occupation;
+      let rnk = 1;
+      const addRank = Rank.map((v) => {
+        if (v.occupation === occ){
+          return {
+            ...v,
+            rank: rnk,
+          }
+        } else {
+          rnk += 1;
+          occ = v.occupation;
+          return {
+            ...v,
+            rank: rnk,
+          }
+        }
+      });
+      res.status(200).json(addRank);
+    } else {
+      res.status(200).json(null);
+    }
   } catch (err) {
     console.error(err);
     next(err);
@@ -346,6 +369,10 @@ router.get('/:teamId', async (req, res, next) => {
         attributes: ['lat', 'lng', 'id', 'title']
       }]
     });
+    console.log('------------------------------------');
+    console.log("WTF", req.params.teamId);
+    console.log(team);
+    console.log('------------------------------------');
     res.status(200).json(team);
   } catch (error) {
     console.error(error);
