@@ -50,25 +50,27 @@ module.exports = (sequelize, DataTypes) => {
     };
 
     Stadium.addHook("afterFind", 'PastTime', async (result) => {
-      if(Array.isArray(result)) {
-        var arrayLength = result.length;
-        for (var i = 0; i < arrayLength; i++) {
-            result[i].logo = "works";
+      if (result) {
+        if (Array.isArray(result)) {
+          var arrayLength = result.length;
+          for (var i = 0; i < arrayLength; i++) {
+              result[i].logo = "works";
+          }
+          return result.map(async (v) => {
+            if(moment().diff(moment(v.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0) {
+              v.valid = null;
+              v.TeamId = null;
+              await v.save();
+            }
+          });
+        } else {
+            if(moment().diff(moment(result.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0) {
+              result.valid = null;
+              result.TeamId = null;
+              await result.save();
+            }
+            return result;
         }
-        return result.map(async (v) => {
-          if(moment().diff(moment(v.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0) {
-            v.valid = null;
-            v.TeamId = null;
-            await v.save();
-          }
-        });
-      } else {
-          if(moment().diff(moment(result.valid, 'YYYY-MM-DD HH:00:00').format(), 'hours') > 0) {
-            result.valid = null;
-            result.TeamId = null;
-            await result.save();
-          }
-          return result;
       }
     });
     return Stadium;
