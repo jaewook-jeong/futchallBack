@@ -54,6 +54,9 @@ module.exports = () => {
     secretOrKey   : process.env.JWT_SECRET,
   }, async (jwtPayload, done) => {
     try {
+      console.log('------------------------------------');
+      console.log(jwtPayload);
+      console.log('------------------------------------');
       const user = await User.findOne({ where: { originalId: jwtPayload.originalId } });
       if (!user) {
         return done("CSRF Attack", null);
