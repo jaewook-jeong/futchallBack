@@ -109,6 +109,32 @@ router.get('/istaken', passport.authenticate('access-jwt', { session: false }), 
   }
 });
 
+router.get('/visited/:stadiumlist', async (req, res, next) => {
+  try {
+    // const visitedArr = req.params.stadiumlist.slice(8).split(',').reverse();
+    console.log('------------------------------------');
+    console.log(req.cookies);
+    console.log('------------------------------------');
+    const visitedArr = ['1'];
+    const list = await Stadium.findAll({
+      where: {
+        id: {
+          [Op.in]: visitedArr,
+        }
+      },
+      attributes: ['id', 'title', 'address', 'Images.src'],
+      include: [{
+        model: Image,
+        attributes: ['src'],
+      }]
+    });
+    res.status(200).json(list);
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 router.post('/:stadiumId/take', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
   try {
     const isInTeam = await User.findOne({
