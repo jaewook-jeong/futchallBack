@@ -109,13 +109,13 @@ router.get('/istaken', passport.authenticate('access-jwt', { session: false }), 
   }
 });
 
-router.get('/visited/:stadiumlist', async (req, res, next) => {
+router.get('/visited', async (req, res, next) => {
   try {
     // const visitedArr = req.params.stadiumlist.slice(8).split(',').reverse();
     console.log('------------------------------------');
-    console.log(req.cookies);
+    console.log(req.cookies.Visited, "visited");
     console.log('------------------------------------');
-    const visitedArr = ['1'];
+    const visitedArr = req.cookies.Visited.split(',').reverse();
     const list = await Stadium.findAll({
       where: {
         id: {
