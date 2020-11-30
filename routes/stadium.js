@@ -115,20 +115,25 @@ router.get('/visited', async (req, res, next) => {
     console.log('------------------------------------');
     console.log(req.cookies.Visited, "visited");
     console.log('------------------------------------');
-    const visitedArr = req.cookies.Visited.split(',').reverse();
-    const list = await Stadium.findAll({
-      where: {
-        id: {
-          [Op.in]: visitedArr,
-        }
-      },
-      attributes: ['id', 'title', 'address', 'Images.src'],
-      include: [{
-        model: Image,
-        attributes: ['src'],
-      }]
-    });
-    res.status(200).json(list);
+    if (req.cookies.Visited) {
+      const visitedArr = req.cookies.Visited.split(',').reverse();
+      const list = await Stadium.findAll({
+        where: {
+          id: {
+            [Op.in]: visitedArr,
+          }
+        },
+        attributes: ['id', 'title', 'address', 'Images.src'],
+        include: [{
+          model: Image,
+          attributes: ['src'],
+        }]
+      });
+      return res.status(200).json(list);
+    } else {
+      return res.status(204);
+    }
+    
   } catch (err) {
     console.error(err);
     next(err);
