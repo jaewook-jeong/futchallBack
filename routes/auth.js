@@ -61,9 +61,9 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
     });
     if (req.headers.authorization.slice(7) !== fullUserWithoutPwd.token) {
       console.log('------------------------------------');
-      console.log("로그인은 중복접속이 불가합니다.");
+      console.log("로그인은 중복접속이 불가합니다.", req.cookies);
       console.log('------------------------------------');
-      res.clearCookie('RefreshToken');
+      res.clearCookie('RefreshToken', { domain: process.env.NODE_ENV === 'production' && '.futchall.com' });
       return res.status(403).send("CSRF attack");
     }
     const accessToken = jwt.sign({ id: req.user.id, originalId: fullUserWithoutPwd.originalId }, process.env.JWT_SECRET, { expiresIn: '30m' });
