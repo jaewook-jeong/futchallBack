@@ -29,17 +29,21 @@ db.sequelize.sync()
   .catch(console.error);
 
 if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
   app.use(morgan('combined'));
   app.use(hpp());
   app.use(helmet());
+  app.use(cors({
+    origin: 'https://futchall.com',
+    credentials: true,
+  })); 
 } else {
   app.use(morgan('dev'));
+  app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })); 
 }
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://futchall.com', 'https://www.futchall.com'],
-  credentials: true,
-})); 
+
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // json형태의 data를 req.body!
 app.use(express.urlencoded({ extended: true })); // form submit시 req.body처리!
