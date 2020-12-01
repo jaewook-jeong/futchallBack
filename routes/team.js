@@ -11,6 +11,7 @@ const router = express.Router();
 
 router.post('/image', passport.authenticate('access-jwt', { session: false }), upload.single('image'), async (req, res, next) => {
   console.log(req.file);
+  res.header("Access-Control-Allow-Origin", "*");
   res.json(req.file.location.replace(/\/original\//, '/thumb/'));
 })
 
