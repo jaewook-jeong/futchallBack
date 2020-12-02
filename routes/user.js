@@ -144,7 +144,7 @@ router.post('/logout', passport.authenticate('access-jwt', { session: false }), 
   console.log('------------------------------------');
   console.log(req.cookies);
   console.log('------------------------------------');
-  console.log(req.session.cookie);
+  console.log(req.session?.cookie);
   console.log('------------------------------------');
   res.cookie('RefreshToken', null, { maxAge: 0, httpOnly: true, domain: process.env.NODE_ENV === 'production' && '.futchall.com', secure: true });
   await db.User.update({ token: null }, { where: { id: req.user.id } })

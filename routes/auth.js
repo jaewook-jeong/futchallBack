@@ -66,9 +66,9 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
       console.log('------------------------------------');
       console.log(req.headers);
       console.log('------------------------------------');
-      console.log(req.cookies);
+      console.log(req?.cookies);
       console.log('------------------------------------');
-      console.log(req.session.cookie);
+      console.log(req.session?.cookie);
       console.log('------------------------------------');
       res.clearCookie('RefreshToken', { httpOnly: true, domain: '.futchall.com', secure: true });
       return res.status(403).send("CSRF attack");
