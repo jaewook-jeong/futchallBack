@@ -136,6 +136,16 @@ router.post('/isTaken', async (req, res, next) => {
 });
 
 router.post('/logout', passport.authenticate('access-jwt', { session: false }), async (req, res) => {
+  console.log('------------------------------------');
+  console.log("로그ㅇㅏ웃이닷!");
+  console.log(req.rawHeaders);
+  console.log('------------------------------------');
+  console.log(req.headers);
+  console.log('------------------------------------');
+  console.log(req.cookies);
+  console.log('------------------------------------');
+  console.log(req.session.cookie);
+  console.log('------------------------------------');
   res.cookie('RefreshToken', null, { maxAge: 0, httpOnly: true, domain: process.env.NODE_ENV === 'production' && '.futchall.com', secure: true });
   await db.User.update({ token: null }, { where: { id: req.user.id } })
   return res.status(204).send('ok');
