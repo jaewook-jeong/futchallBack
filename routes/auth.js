@@ -62,6 +62,13 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
     if (req.headers.authorization.slice(7) !== fullUserWithoutPwd.token) {
       console.log('------------------------------------');
       console.log("로그인은 중복접속이 불가합니다.");
+      console.log(req.rawHeaders);
+      console.log('------------------------------------');
+      console.log(req.headers);
+      console.log('------------------------------------');
+      console.log(req.cookies);
+      console.log('------------------------------------');
+      console.log(req.session.cookie);
       console.log('------------------------------------');
       res.clearCookie('RefreshToken', { httpOnly: true, domain: '.futchall.com', secure: true });
       return res.status(403).send("CSRF attack");
