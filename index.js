@@ -34,7 +34,6 @@ if (process.env.NODE_ENV === 'production') {
   app.use(helmet());
   app.use(cors({
     origin: 'https://futchall.com',
-    preflightContinue: true,
     credentials: true,
   })); 
 } else {
