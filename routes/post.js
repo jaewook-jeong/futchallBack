@@ -1,17 +1,10 @@
 const express = require('express');
-const fs = require('fs');
 const passport = require('passport');
 
 const { Post, Comment, Image, User, Stadium, Team, Match } = require('../models');
 const { isLoggedIn, upload } = require('./middlewares');
 
 const router = express.Router();
-
-try {
-  fs.accessSync('uploads');
-} catch (error) {
-  fs.mkdirSync('uploads');
-}
 
 router.post('/images', passport.authenticate('access-jwt', { session: false }),  upload.array('image'), async (req, res, next) => {
   console.log(req.files);
