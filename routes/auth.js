@@ -44,11 +44,6 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
   })(req, res, next);
 });
 
-router.post('/delete', async(req, res, next) => {
-  res.cookie('RefreshToken', '1', { httpOnly: true, domain: '.futchall.com', secure: true, maxAge: 0 });
-  return res.status(203).send('완료');
-})
-
 router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), async (req, res, next) => {
   try {
     const fullUserWithoutPwd = await db.User.findOne({
