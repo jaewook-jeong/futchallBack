@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(hpp());
   app.use(helmet());
   app.use(cors({
-    origin: 'https://futchall.com/',
+    origin: 'https://futchall.com',
     credentials: true,
   })); 
 } else {
