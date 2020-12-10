@@ -31,16 +31,18 @@ exports.refererCheck = (req, res, next) => {
     res.status(403).send('Referer Error');
   }
 }
-AWS.config.update({
+const s3 = new AWS.S3({
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   region: 'ap-northeast-2',
-});
+})
 
 exports.upload = multer({
   storage: multerS3({
-    s3: new AWS.S3(),
+    s3: s3,
     bucket: 'futchall',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    acl: 'public-read-write',
     key(req, file, cb) {
       cb(null, `original/${Date.now()}_${path.basename(file.originalname)}`)
     }
