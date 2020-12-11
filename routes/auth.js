@@ -70,7 +70,7 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
       console.log('------------------------------------');
       res.cookie('RefreshToken', '1', { httpOnly: true, domain: '.futchall.com', secure: true, maxAge: 0 });
       // res.clearCookie('RefreshToken', { httpOnly: true, domain: '.futchall.com', secure: true });
-      return res.status(403).send("다른기기에서 접속중입니다.");
+      return res.status(203).send("다른기기에서 접속중입니다.");
     }
     const accessToken = jwt.sign({ id: req.user.id, originalId: fullUserWithoutPwd.originalId }, process.env.JWT_SECRET, { expiresIn: '30m' });
     res.status(200).json({ me: fullUserWithoutPwd, token: accessToken });
