@@ -68,7 +68,7 @@ router.get('/myinfo', passport.authenticate('refresh-jwt', { session: false }), 
       console.log('------------------------------------');
       console.log(req.cookies);
       console.log('------------------------------------');
-      res.cookie('RefreshToken', null, { httpOnly: true, domain: '.futchall.com', secure: true, maxAge: 0 });
+      res.cookie('RefreshToken', null, { httpOnly: true, domain: '.futchall.com', maxAge: 0 });
       // res.clearCookie('RefreshToken', { httpOnly: true, domain: '.futchall.com', secure: true });
       return res.status(403).send("다른기기에서 접속중입니다.");
     }
