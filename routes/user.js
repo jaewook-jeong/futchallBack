@@ -12,7 +12,11 @@ require('dotenv').config();
 
 router.post('/image', upload.single('image'), async (req, res, next) => {
   console.log(req.file);
-  res.json(req.file.location.replace(/\/original\//, '/thumb/'));
+  if (req.file.mimetype !== 'image/gif') {
+    return res.json(req.file.location.replace(/\/original\//, '/thumb/'));
+  } else {
+    return res.json(req.file.location);
+  }
 })
 
 router.patch('/joinmanage', passport.authenticate('access-jwt', { session: false }), async (req, res, next) => {
