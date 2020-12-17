@@ -23,7 +23,7 @@ router.patch('/', async (req, res, next) => {
         attributes: ['src', 'id']
       }, {
         model: db.Team,
-        attributes: ['id'],
+        attributes: ['id', 'title'],
         include: [{
           model: db.Image,
           attributes: ['src'],
