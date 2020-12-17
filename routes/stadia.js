@@ -20,6 +20,13 @@ router.patch('/', async (req, res, next) => {
       },
       include: [{
         model: db.Image,
+      }, {
+        model: db.Team,
+        attributes: ['Images.src'],
+        include: [{
+          model: db.Image,
+          attributes: ['src'],
+        }]
       }]
     });
     res.status(200).json(stadiumList);
