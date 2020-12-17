@@ -20,9 +20,10 @@ router.patch('/', async (req, res, next) => {
       },
       include: [{
         model: db.Image,
+        attributes: ['src', 'id']
       }, {
         model: db.Team,
-        attributes: ['Images.src'],
+        attributes: ['id'],
         include: [{
           model: db.Image,
           attributes: ['src'],
